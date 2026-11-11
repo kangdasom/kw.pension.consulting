@@ -1,0 +1,22 @@
+/* Pretendard v1.3.9 by Kil Hyung-jin, SIL Open Font License 1.1.
+   Font and license are bundled in assets/fonts/pretendard/. */
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+  src: url("assets/fonts/pretendard/PretendardVariable.woff2") format("woff2");
+}
+
+:root {
+  --app-font: "Pretendard", Arial, "Malgun Gothic", sans-serif;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+.table-frame table {
+  font-family: var(--app-font);
+}

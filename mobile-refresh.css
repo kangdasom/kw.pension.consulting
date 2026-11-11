@@ -1,0 +1,205 @@
+/* Approved mobile concept. The existing logo header is intentionally untouched. */
+.app-shell{background:#fff}
+.page-heading{align-items:center;gap:8px;padding:16px 0 12px;border-bottom:0;flex-wrap:nowrap}
+.page-heading h1{font-size:15px;line-height:1.45;letter-spacing:-.045em;margin:0 0 4px;color:#23234e}
+.page-heading p{font-size:10px;line-height:1.5;color:#7c7c88}
+.page-heading .outline-button{font-size:10px;white-space:nowrap;min-height:36px;padding:4px 0 4px 6px}
+.import-disclosure{border-top:1px solid #eeeef3;border-bottom:1px solid #eeeef3;margin-bottom:12px;color:#767684;font-size:10px}
+.import-disclosure>summary{cursor:pointer;min-height:32px;padding:9px 3px;color:#57576d}
+.import-disclosure[open]>summary{color:#23234e;font-weight:600}
+.import-disclosure .import-validation{padding:4px 3px 10px;border:0;font-size:10px;line-height:1.6}
+.import-disclosure .import-validation button{min-height:34px;font-size:10px}
+.filter-panel{padding:0 0 4px;border:0;border-bottom:1px solid #dcdce5;border-radius:0;box-shadow:none}
+.filter-panel .primary-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center}
+.primary-filters .filter-control,.primary-filters .product-filter{min-width:0;grid-column:auto;gap:0}
+.primary-filters .filter-control>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.primary-filters select,.primary-filters .select-trigger{height:36px;width:100%;min-width:0;font-size:11px;font-weight:500;color:#393949;border:1px solid #bdbdc9;border-radius:4px;background:#fff;padding:0 9px;letter-spacing:-.03em}
+.primary-filters select{padding-right:17px}
+.select-trigger span{font-size:14px;color:#606073}
+.multi-menu{top:40px;min-width:120px;border:1px solid #d7d7e2;box-shadow:0 5px 14px #20205212;border-radius:4px;z-index:6}
+.multi-menu label{min-height:34px;display:flex;align-items:center;font-size:11px;padding:5px 3px}
+.filter-summary-row{display:flex;align-items:center;gap:10px;min-height:38px;padding-top:2px}
+.filter-summary{margin:0;flex:1;min-width:0;font-size:10px;color:#83838f;line-height:1.6}
+.filter-summary b{font-weight:600;color:#ec2c78}
+.filter-summary-row .view-all-button{border:0;background:none;padding:6px 0;min-height:32px;font:inherit;font-size:10px;font-weight:400;color:#615c78;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;cursor:pointer}
+.filter-summary-row .more-filter-button{height:36px;border:0;background:none;color:#29294f;padding:0;font-size:11px;white-space:nowrap}
+.filter-summary-row .more-filter-button span{margin-left:4px}
+.filter-summary-row .reset-button{height:32px;min-width:32px;width:auto;border:0;border-left:1px solid #dddde5;border-radius:0;padding:0 0 0 10px;font-size:21px;font-weight:400;background:none;color:#686879}
+.filter-summary-row .reset-button span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.filter-panel .secondary-filters{grid-template-columns:repeat(3,minmax(0,1fr))!important;margin-top:3px;padding-top:9px;gap:7px}
+.secondary-filters[hidden]{display:none!important}
+.secondary-filters .filter-control{min-width:0;gap:5px}
+.secondary-filters .filter-control>span{font-size:10px;color:#777783}
+.secondary-filters .filter-control select{height:34px;font-size:11px;padding:0 7px}
+.table-toolbar{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;padding:6px 0 2px;margin:0}
+.table-toolbar .result-count{font-size:11px;color:#25254b;font-weight:700;align-self:center}
+.table-toolbar .result-count strong{font-size:14px;color:#ec2c78;margin-left:3px;font-variant-numeric:tabular-nums}
+.table-toolbar .toolbar-actions{width:auto;gap:5px;align-items:center}
+.table-toolbar .sort-control{width:100px;min-width:0;margin:0}
+.table-toolbar .maturity-sort{width:48px;min-width:0}
+.table-toolbar .maturity-sort[hidden]{display:none!important}
+.table-toolbar select{height:32px;font-size:10px;border:1px solid #c4c4cf;border-radius:4px;color:#34344f;padding:0 4px;background:#fff}
+.table-toolbar #saveButton{height:32px;padding:0 9px;background:#fff;border:1px solid #24244e;border-radius:4px;color:#24244e;font-size:10px;font-weight:700;box-shadow:none}
+.table-frame{border:0;border-radius:0}
+.table-frame table{width:calc(100% + 76px);min-width:0;table-layout:fixed}
+.table-frame th,.table-frame td{padding:9px 2px;border-bottom:1px solid #e0e0e9;font-size:10px;line-height:1.35;font-weight:500}
+.table-frame th{height:32px;background:#e9e7f3;color:#29294f;font-weight:700;font-size:10px}
+.table-frame th:first-child{width:38px;font-size:9px}
+.table-frame th:nth-child(2){width:46px}
+.table-frame th:nth-child(3){width:66px}
+.table-frame th:nth-child(4){width:27px}
+.table-frame .rate-head{width:auto}
+.table-frame .product-col{left:38px;width:46px}
+.table-frame tbody .sticky-col{background:#fff}
+.table-frame tbody tr:hover,.table-frame tbody tr:hover .sticky-col{background:#faf9fd}
+.table-frame .product-name{font-size:10px;font-weight:400;line-height:1.35;text-align:center;letter-spacing:-.035em}
+.table-frame .institution{font-size:10px;font-weight:500;color:#34343e;line-height:1.4;text-align:center;word-break:keep-all;overflow-wrap:anywhere}
+.table-frame .grade{font-size:9px;color:#555565}
+.table-frame tbody .rate,.table-frame tbody .rate.gic{font-size:11px!important;font-weight:600;color:#252541;font-variant-numeric:tabular-nums;letter-spacing:-.035em}
+.table-frame .gic small{font-size:9px;font-weight:400;color:#8b8b98;line-height:1.4;margin-top:2px}
+.table-frame .status{font-size:9px;font-weight:600;line-height:1.3;border:0;border-radius:0;padding:0;background:none;color:#292951}
+.table-frame .status.partial{color:#e42e78;background:none}
+.table-frame .status.no{color:#9696a2;background:none}
+.table-frame .yn{font-size:10px;color:#777787}
+.table-meta{font-size:9px;color:#93939e;line-height:1.5;padding:9px 0 0}
+.rate-footnote{font-size:9px;line-height:1.7;color:#898995;margin:5px 0 0}
+.rate-footnote span{display:block}
+.filter-panel button:focus-visible,.filter-panel select:focus-visible,.table-toolbar button:focus-visible,.table-toolbar select:focus-visible{outline:2px solid #615cb2;outline-offset:2px}
+@media(min-width:600px){.page-heading{padding-top:20px}.page-heading h1{font-size:17px}.filter-panel .primary-filters{gap:10px}.table-frame th:nth-child(3){width:100px}.table-frame th:nth-child(2){width:62px}.table-frame .product-col{width:62px}.table-frame th,.table-frame td{font-size:11px;padding:10px 4px}.table-frame .institution,.table-frame .product-name{font-size:11px}.table-frame tbody .rate,.table-frame tbody .rate.gic{font-size:12px!important}.rate-footnote span{display:inline;margin-left:10px}}
+@media(max-width:360px){.page-heading h1{font-size:14px}.page-heading .outline-button{font-size:9px}.table-toolbar .sort-control{width:88px}.table-toolbar .toolbar-actions{gap:3px}.table-toolbar #saveButton{padding:0 6px}.table-frame table{width:calc(100% + 96px)}.table-frame th:nth-child(3){width:61px}.table-frame th:nth-child(2){width:42px}.table-frame .product-col{width:42px}}
+
+/* Fixed compact columns keep the four primary rates visible on mobile. */
+.app-shell{max-width:430px;padding-left:8px;padding-right:8px}
+.table-frame table{width:max-content;min-width:0}
+.table-frame th,.table-frame td{padding:5px 1px;font-size:10px}
+.table-frame th{height:32px;white-space:nowrap;text-overflow:clip}
+.table-frame td{height:39px}
+.table-frame th:first-child,.table-frame td:first-child{width:42px;min-width:42px;font-size:9px}
+.table-frame th:nth-child(2),.table-frame td:nth-child(2){width:44px;min-width:44px}
+.table-frame .product-col{left:42px;width:44px}
+.table-frame th:nth-child(3),.table-frame td:nth-child(3){width:66px;min-width:66px}
+.table-frame th:nth-child(4),.table-frame td:nth-child(4){width:36px;min-width:36px;white-space:nowrap;text-overflow:clip}
+.table-frame .rate-head,.table-frame tbody .rate{width:31px;min-width:31px}
+.table-frame .product-name{font-size:10px;line-height:1.2;word-break:keep-all;overflow-wrap:normal;white-space:normal}
+.table-frame .institution{font-size:10px;line-height:1.2}
+.table-frame .grade{font-size:9px;letter-spacing:-.03em}
+.table-frame tbody .rate,.table-frame tbody .rate.gic{font-size:11px!important;letter-spacing:-.035em}
+.table-frame .gic small{font-size:9px;line-height:1.2;margin-top:1px}
+
+/* Fit through the 5y rate; keep lineup and provider status in horizontal overflow. */
+.table-scroll{container-type:inline-size}
+.table-frame table{width:calc(100% + 72px);min-width:0;table-layout:fixed}
+.table-frame th:nth-child(9),.table-frame td:nth-child(9){width:34px;min-width:34px}
+.table-frame th:nth-child(10),.table-frame td:nth-child(10){width:38px;min-width:38px}
+.table-frame .rate-head,.table-frame tbody .rate{width:calc((100cqw - 188px)/4);min-width:0}
+@media(max-width:374px){
+  .table-frame th:first-child,.table-frame td:first-child{width:38px;min-width:38px}
+  .table-frame th:nth-child(2),.table-frame td:nth-child(2){width:40px;min-width:40px}
+  .table-frame .product-col{left:38px;width:40px}
+  .table-frame th:nth-child(3),.table-frame td:nth-child(3){width:58px;min-width:58px}
+  .table-frame th:nth-child(4),.table-frame td:nth-child(4){width:30px;min-width:30px}
+  .table-frame .rate-head,.table-frame tbody .rate{width:calc((100cqw - 166px)/4)}
+}
+
+/* Keep the institution visible while rates scroll; enlarge numeric rates by 15%. */
+.table-frame .institution-col{left:42px}
+.table-frame tbody .rate,.table-frame tbody .rate.gic{font-size:12.65px!important}
+.table-frame .gic small{font-size:10.35px}
+@media(max-width:374px){.table-frame .institution-col{left:38px}}
+
+.rate-unit{text-align:right;font-size:10px;line-height:1.5;color:#777787;margin:3px 0 4px}
+#panel-sales>.rate-unit{margin:0 0 2px}
+
+#infoModal .guide-list ul{margin:7px 0 0;padding-left:18px;font-size:12px;line-height:1.65;color:#66738a}
+#infoModal .guide-list li+li{margin-top:5px}
+
+/* Compact notice dialog with consistent bullet spacing. */
+#infoModal .modal{padding:18px 20px}
+#infoModal h2{margin:0 0 10px;padding-right:30px;font-size:22px;line-height:1.35}
+#infoModal .guide-list>div{padding:11px 0}
+#infoModal .guide-list>div:last-child{border-bottom:0;padding-bottom:0}
+#infoModal .guide-list ul{list-style-type:disc;margin-top:6px}
+
+/* Semantic columns override the former ten-column positional widths. */
+.table-frame .sales-rate-table{width:calc(100% + 72px);min-width:0;table-layout:fixed}
+.table-frame .sales-rate-table th,.table-frame .sales-rate-table td{width:auto;min-width:0;font-size:10px}
+.table-frame .sales-rate-table .product-col{width:44px;min-width:44px}
+.table-frame .sales-rate-table .institution-col{width:66px;min-width:66px;left:0}
+.table-frame .sales-rate-table .grade-col{width:34px;min-width:34px;font-size:9px;white-space:nowrap}
+.table-frame .sales-rate-table .rate-head,.table-frame .sales-rate-table .rate{width:calc((100cqw - 144px)/4);min-width:0}
+.table-frame .sales-rate-table .lineup-col{width:34px;min-width:34px;display:table-cell}
+.table-frame .sales-rate-table .provider-col{width:38px;min-width:38px;display:table-cell}
+.rate-status-trigger{display:block;width:100%;min-height:29px;padding:2px 1px;border:0;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.rate-value{display:inline-block;position:relative}
+.rate-needs-confirm::after{content:'';position:absolute;right:-5px;top:0;width:4px;height:4px;border-radius:50%;background:#ec2c78}
+.table-frame .rate-status-dim,.table-frame .rate-status-dim small{color:#b7b7c4}
+.rate-status-trigger:focus-visible{outline:1px solid #ec2c78;outline-offset:-1px;border-radius:3px}
+.rate-status-tooltip{position:fixed;z-index:30;box-sizing:border-box;padding:9px 11px;background:#25254b;color:#fff;border-radius:5px;font:11px/1.5 Arial,"Malgun Gothic",sans-serif;box-shadow:0 3px 12px #20205225;pointer-events:none;overflow-wrap:anywhere}
+.rate-status-tooltip[hidden]{display:none}
+.rate-status-tooltip::after{content:'';position:absolute;left:var(--arrow-x);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-bottom:0;border-top-color:#25254b}
+.rate-status-tooltip.below::after{top:-6px;bottom:auto;border-top:0;border-bottom:6px solid #25254b}
+@media(max-width:374px){
+ .table-frame .sales-rate-table .product-col{width:40px;min-width:40px}
+ .table-frame .sales-rate-table .institution-col{width:58px;min-width:58px}
+ .table-frame .sales-rate-table .grade-col{width:30px;min-width:30px}
+ .table-frame .sales-rate-table .rate-head,.table-frame .sales-rate-table .rate{width:calc((100cqw - 128px)/4)}
+}
+@media print{.rate-needs-confirm::after,.rate-status-tooltip{display:none!important}.table-frame .rate-status-dim,.table-frame .rate-status-dim small{color:#25254b}}
+
+/* Keep long notices scrollable within the visible mobile viewport. */
+#infoModal .modal{max-height:90vh;max-height:90dvh;overflow-y:auto;overscroll-behavior:contain}
+
+/* Optional notebook presentation, sharing the existing sales data and controls. */
+.topbar{height:96px!important;padding-top:30px!important}
+.view-mode-button{position:absolute;right:10px;top:4px;z-index:1;min-height:26px;padding:3px 9px;border:1px solid #d8d7e3;border-radius:4px;background:#fff;color:#343454;font-size:11px;cursor:pointer;white-space:nowrap}
+.view-mode-button:hover{background:#f6f5fa;border-color:#777293}
+.view-mode-button:focus-visible{outline:2px solid #ec2c78;outline-offset:2px}
+@media(min-width:960px){
+ body.desktop-view .app-shell:not(.management-active){max-width:1240px;padding-inline:28px}
+ body.desktop-view .topbar{height:76px!important;padding-top:0!important;margin-inline:0!important}
+ body.desktop-view .topbar .brand-lockup{justify-content:flex-start}
+ body.desktop-view .view-mode-button{top:24px;right:0;font-size:12px}
+ body.desktop-view .main-tabs{gap:24px;justify-content:flex-start;margin-bottom:0}
+ body.desktop-view .main-tabs button{flex:0 1 220px;font-size:14px;min-height:46px}
+ body.desktop-view #panel-sales .page-heading{padding:20px 0 16px}
+ body.desktop-view #panel-sales .page-heading h1{font-size:23px;margin-bottom:5px}
+ body.desktop-view #panel-sales .page-heading p{font-size:12px}
+ body.desktop-view #panel-sales .outline-button{font-size:12px;padding-inline:12px}
+ body.desktop-view #panel-sales .filter-panel{display:grid;grid-template-columns:minmax(480px,640px) 1fr;gap:0 24px;padding:0 0 10px;align-items:end}
+ body.desktop-view #panel-sales .filter-summary-row{min-height:38px;gap:14px;padding:0}
+ body.desktop-view #panel-sales .filter-summary{font-size:12px}
+ body.desktop-view #panel-sales .filter-summary-row button{font-size:12px}
+ body.desktop-view #panel-sales .filter-summary-row .reset-button{font-size:22px}
+ body.desktop-view #panel-sales .secondary-filters{grid-column:1/-1;max-width:640px;width:100%;margin-top:10px}
+ body.desktop-view #panel-sales .primary-filters select,body.desktop-view #panel-sales .select-trigger{font-size:13px;height:38px}
+ body.desktop-view #panel-sales .secondary-filters select{font-size:12px;height:36px}
+ body.desktop-view #panel-sales .secondary-filters .filter-control>span{font-size:11px}
+ body.desktop-view #panel-sales .multi-menu label{font-size:13px;min-height:36px}
+ body.desktop-view #panel-sales .table-toolbar{padding:12px 0 6px}
+ body.desktop-view #panel-sales .result-count{font-size:13px}
+ body.desktop-view #panel-sales .result-count strong{font-size:17px}
+ body.desktop-view #panel-sales .toolbar-actions{gap:8px}
+ body.desktop-view #panel-sales .sort-control{width:160px}
+ body.desktop-view #panel-sales .maturity-sort{width:76px}
+ body.desktop-view #panel-sales .table-toolbar select,body.desktop-view #panel-sales #saveButton{height:36px;font-size:12px;padding-inline:10px}
+ body.desktop-view #panel-sales>.rate-unit{font-size:11px}
+ body.desktop-view .table-frame .sales-rate-table{width:100%;min-width:0}
+ body.desktop-view .table-frame .sales-rate-table th,body.desktop-view .table-frame .sales-rate-table td{padding:5px 8px;font-size:12px;height:37px}
+ body.desktop-view .table-frame .sales-rate-table th{height:38px}
+ body.desktop-view .table-frame .sales-rate-table .product-col{width:112px;min-width:112px;font-weight:400}
+ body.desktop-view .table-frame .sales-rate-table .institution-col{width:168px;min-width:168px;left:0}
+ body.desktop-view .table-frame .sales-rate-table .grade-col{width:72px;min-width:72px;font-size:12px}
+ body.desktop-view .table-frame .sales-rate-table .lineup-col,body.desktop-view .table-frame .sales-rate-table .provider-col{width:64px;min-width:64px}
+ body.desktop-view .table-frame .sales-rate-table .rate-head,body.desktop-view .table-frame .sales-rate-table .rate{width:auto;min-width:0}
+ body.desktop-view .table-frame tbody .rate,body.desktop-view .table-frame tbody .rate.gic{font-size:15px!important}
+ body.desktop-view .table-frame .gic small{display:inline;font-size:12px;margin-left:4px}
+ body.desktop-view .table-frame .institution{font-size:13px;line-height:1.35}
+ body.desktop-view .table-frame .product-name{font-size:12px;line-height:1.35}
+ body.desktop-view #panel-sales .table-meta{font-size:11px;padding-top:10px}
+}
+
+/* Authored notices are plain text; preserve line breaks and long words. */
+.notice-banner[hidden]{display:none!important}
+#infoModal .notice-banner{padding:15px 16px;margin:14px 0 18px;border:1px solid #f3bfd2;border-left:4px solid #ec2c78;border-radius:5px;background:#fff0f5;color:#29294f}
+#infoModal .notice-banner strong{display:block;font-size:12px;color:#c51d60;margin-bottom:8px}
+#infoModal .notice-banner p{margin:0;font-size:14px;font-weight:600;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}

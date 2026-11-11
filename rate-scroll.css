@@ -1,0 +1,14 @@
+.floating-rate-head{position:fixed;z-index:7;margin:0;background:#e9e7f3;box-shadow:0 2px 4px #20205225;pointer-events:auto}
+.floating-rate-head[hidden],.floating-rate-scroll[hidden]{display:none!important}
+.floating-rate-head .table-scroll{overflow-x:hidden!important;scrollbar-width:none}
+.floating-rate-head table{margin:0;border-collapse:collapse;table-layout:fixed}
+.floating-rate-head th{background:#e9e7f3}
+.floating-rate-head .sticky-col{z-index:2}
+.floating-rate-scroll{position:fixed;z-index:8;display:flex;align-items:center;min-height:34px;padding:0 10px env(safe-area-inset-bottom);background:#fffffff0;border:0;border-radius:0;box-shadow:none;box-sizing:border-box}
+.floating-rate-scroll input{flex:1;min-width:0;margin:0;height:34px;appearance:none;-webkit-appearance:none;background:transparent;cursor:ew-resize;touch-action:pan-y}
+.floating-rate-scroll input::-webkit-slider-runnable-track{height:2px;background:#e5e5ea;border-radius:1px}
+.floating-rate-scroll input::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:28px;height:5px;margin-top:-1.5px;border:0;border-radius:2px;background:#a1a1ad}
+.floating-rate-scroll input::-moz-range-track{height:2px;background:#e5e5ea;border-radius:1px}
+.floating-rate-scroll input::-moz-range-thumb{width:28px;height:5px;border:0;border-radius:2px;background:#a1a1ad}
+.floating-rate-scroll input:focus-visible{outline:2px solid #ed2f7b;outline-offset:2px;border-radius:4px}
+@media print{.floating-rate-head,.floating-rate-scroll{display:none!important}}
