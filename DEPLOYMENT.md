@@ -1,8 +1,10 @@
 # GitHub Pages 배포
 
-대상 저장소: https://github.com/kangdasom/AI-
+대상 저장소: https://github.com/kangdasom/kw.pension.consulting
 
-예상 주소: https://kangdasom.github.io/AI-/
+예상 주소: https://kangdasom.github.io/kw.pension.consulting/
+
+2026-11-11 준비 중 동일 저장소(ID 1317770573)의 이름이 `AI-`에서 `kw.pension.consulting`으로 변경된 것을 확인했다. 기존 `/AI-/` 주소의 리디렉션은 보장하지 않으므로 현재 이름의 주소를 공유한다.
 
 현재 앱은 빌드 없는 HTML/CSS/JavaScript다. 화면·데이터·스타일을 변환하지 않고 실행에 필요한 파일만 `.pages-dist`로 복사해 배포한다. HTML/CSS의 상대경로를 유지하므로 `/AI-/`에서 동작하며 React/Vite 설정은 필요하지 않다. 화면 전환은 한 HTML 안의 탭·팝업 방식이라 SPA fallback도 필요하지 않다.
 
