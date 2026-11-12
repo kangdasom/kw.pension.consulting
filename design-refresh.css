@@ -4,7 +4,7 @@ body{background:#f5f6f9;color:var(--ink)}
 .app-shell{background:#fff}
 .topbar{height:72px!important;padding:0 6px!important;margin-inline:0!important;justify-content:space-between;border-bottom:0!important;gap:12px}
 .topbar .brand-lockup{width:auto;min-width:0;justify-content:flex-start;gap:0;letter-spacing:-.04em}
-.topbar .brand-logo-visible{width:220px;max-width:none;height:auto;clip-path:inset(0 32% 0 0);margin-left:-70px;margin-right:-65px;flex:none}
+.topbar .brand-logo-visible{width:220px;max-width:none;height:auto;clip-path:inset(0 32% 0 30%);margin-left:-70px;margin-right:-65px;flex:none}
 .app-shell.management-active .topbar{margin-inline:0!important}
 .brand-service{border-left:1px solid #a6a7b3;padding-left:9px;margin-left:4px;color:var(--navy);font-size:17px;font-weight:700;white-space:nowrap}
 .topbar .view-mode-button{position:static;flex:none;font-size:10px;min-height:30px;padding:4px 7px;border:1px solid #e4e4eb;border-radius:6px;background:#fff;color:#737583;order:2}
@@ -46,6 +46,7 @@ body{background:#f5f6f9;color:var(--ink)}
 #panel-sales .table-toolbar #saveButton{height:32px;border:1px solid #d4d4e0;border-radius:5px;font-size:10px;background:#fff;color:var(--navy);padding-inline:8px;box-shadow:none}
 #panel-sales .rate-unit{padding:0 0 5px;font-size:10px;color:#85858e}
 .table-frame th,.table-frame .sales-ranking-table th,.table-frame .sales-ranking-table th.ranking-institution{background:#eae8f2;color:var(--navy)}
+.table-frame .sales-ranking-table .ranking-institution{border-right:0}
 .table-frame .sales-rate-table th{height:35px;font-size:11px;font-weight:700}
 .table-frame .sales-rate-table td{height:37px;border-bottom-color:#dfdfe9}
 .table-frame .sales-rate-table .product-name{font-weight:400;color:#34375b}
