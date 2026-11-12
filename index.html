@@ -162,10 +162,19 @@
 
     <div class="modal-backdrop" id="saveModal" hidden>
       <section class="modal save-modal" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
-        <button class="modal-close" data-close="saveModal" aria-label="닫기">×</button><div class="eyebrow">EXPORT</div><h2 id="saveTitle">금리표 저장 범위</h2><p class="modal-lead">저장할 범위를 선택하면 문서형 미리보기로 이어집니다.</p>
-        <div class="save-options"><button class="save-option selected" data-save-scope="current"><span class="radio-dot"></span><span><b>현재 조회 결과</b><small>현재 필터와 정렬을 반영해 저장</small></span><em>추천</em></button><button class="save-option" data-save-scope="all"><span class="radio-dot"></span><span><b>전체 금리표</b><small>필터와 무관한 전체 대상 상품 저장</small></span></button></div>
+        <button class="modal-close" data-close="saveModal" aria-label="닫기">×</button><h2 id="saveTitle">금리표 저장</h2>
+        <div class="save-options"><button class="save-option selected" data-save-scope="current"><span class="radio-dot"></span><span><b>현재 조회 결과</b><small>현재 필터·선택 만기·정렬 반영</small></span></button><button class="save-option" data-save-scope="all"><span class="radio-dot"></span><span><b>전체 금리표</b><small>전체 상품·중요 네 만기 저장</small></span></button></div>
+        <section class="export-memo-option" id="exportMemoOption" aria-label="저장 이미지 메모">
+          <label class="export-memo-toggle"><input type="checkbox" id="exportMemoEnabled" aria-controls="exportMemoFields" aria-expanded="false"><span>저장 이미지에 메모 넣기</span></label>
+          <p class="export-memo-hint" id="exportMemoHint">선택하면 100자 이내 메모를 추가할 수 있습니다.</p>
+          <div id="exportMemoFields" hidden>
+            <label class="sr-only" for="exportMemo">저장 이미지 메모 내용</label>
+            <textarea id="exportMemo" rows="3" placeholder="예: ○○기업 제안용 · 1년 만기 중심" aria-describedby="exportMemoHelp exportMemoCount" disabled></textarea>
+            <div class="export-memo-meta"><span id="exportMemoHelp">메모는 저장 이미지의 표 위에 표시됩니다.</span><span id="exportMemoCount" role="status" aria-live="polite">0 / 100자</span></div>
+          </div>
+        </section>
         <p id="saveMessage" role="status"></p>
-        <div class="modal-actions"><button class="text-button" data-close="saveModal">취소</button><button class="primary-button" id="previewButton" type="button">미리보기 열기 <span>→</span></button></div>
+        <div class="modal-actions"><button class="text-button" data-close="saveModal">취소</button><button class="primary-button" id="previewButton" type="button">미리보기</button></div>
       </section>
     </div>
 

@@ -2,6 +2,23 @@
   const $=id=>document.getElementById(id);
   const modal=$('exportModal'),image=$('exportImage'),stage=$('exportStage');
   let generation=0,result=null,busy=false,lastFocus=null;
+  const memoToggle=$('exportMemoEnabled'),memoInput=$('exportMemo');
+  const selectedScope=()=>document.querySelector('.save-option.selected')?.dataset.saveScope||'current';
+  function updateMemo(){
+    const current=selectedScope()==='current',enabled=current&&memoToggle.checked;
+    $('exportMemoOption').hidden=!current;memoToggle.disabled=!current;
+    $('exportMemoFields').hidden=!enabled;$('exportMemoHint').hidden=enabled;
+    memoToggle.setAttribute('aria-expanded',String(enabled));memoInput.disabled=!enabled;
+    $('exportMemoCount').textContent=`${Array.from(memoInput.value).length} / 100자`;
+  }
+  function limitMemo(){
+    const limited=Array.from(memoInput.value.replace(/\r\n?/g,'\n')).slice(0,100).join('');
+    if(memoInput.value!==limited)memoInput.value=limited;
+    updateMemo();
+  }
+  memoToggle.addEventListener('change',()=>{updateMemo();if(memoToggle.checked)memoInput.focus();});
+  memoInput.addEventListener('input',event=>{if(!event.isComposing)limitMemo();});
+  memoInput.addEventListener('compositionend',limitMemo);
   function message(text){$('exportMessage').textContent=text;}
   function dispose(){
     if(result) URL.revokeObjectURL(result.url);
@@ -21,9 +38,9 @@
   async function open(){
     if(busy)return;
     $('saveMessage').textContent='';
-    const scope=document.querySelector('.save-option.selected')?.dataset.saveScope||'current';
+    const scope=selectedScope();
     let data;
-    try{data=window.RateExport.snapshot(scope);}catch(error){$('saveMessage').textContent=error.message;return;}
+    try{data=window.RateExport.snapshot(scope,undefined,scope==='current'&&memoToggle.checked?memoInput.value:'');}catch(error){$('saveMessage').textContent=error.message;return;}
     lastFocus=els.saveButton;dispose();const token=++generation;busy=true;
     els.saveModal.hidden=true;modal.hidden=false;document.body.style.overflow='hidden';
     $('exportSummary').textContent=`${scope==='all'?'전체 금리표':'현재 조회 결과'} · ${data.rows.length}개 상품`;
@@ -92,8 +109,10 @@
     option.addEventListener('click',()=>{
       $('saveMessage').textContent='';
       document.querySelectorAll('.save-option').forEach(item=>item.setAttribute('aria-pressed',String(item===option)));
+      updateMemo();
     });
   });
-  els.saveButton.addEventListener('click',()=>{$('saveMessage').textContent='';});
+  els.saveButton.addEventListener('click',()=>{$('saveMessage').textContent='';memoToggle.checked=false;memoInput.value='';updateMemo();});
+  updateMemo();
   window.RateExportUI={open};
 })();

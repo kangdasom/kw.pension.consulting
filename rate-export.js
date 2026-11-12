@@ -12,8 +12,14 @@
   }
   const names=['1년','1.5년','3년','5년'];
   const label=value=>value==='all'?'전체':value;
-  function snapshot(scope, now=new Date()) {
+  function memoText(value) {
+    const text=String(value??'').replace(/\r\n?/g,'\n').trim();
+    if(Array.from(text).length>100)throw Error('메모는 100자 이내로 입력해 주세요.');
+    return text;
+  }
+  function snapshot(scope, now=new Date(), memo='') {
     const all=scope==='all';
+    const exportMemo=all?'':memoText(memo);
     const ranking=!all&&window.SalesRanking?.active()?window.SalesRanking.current():null;
     const indices=all?[0,1,2,3]:ranking?ranking.indices:selectedMaturities();
     const source=all ? rates.filter(row=>maturities.some(term=>row.terms[term])).slice().sort(defaultOrder) : ranking?ranking.rows:filteredRows();
@@ -34,7 +40,7 @@
     });
     const created=now.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
     return {scope:all?'all':'current',title:`${monthLabel} 원리금보장상품 금리`,period:`${importData.start} ~ ${importData.end}`,
-      condition,sortLabel,created,indices:indices.slice(),rows,
+      condition,sortLabel,created,memo:exportMemo,indices:indices.slice(),rows,
       filename:`${importData.month.replace('-','년')}월_금리표_${all?'전체':'현재조회'}.png`};
   }
   function wrap(ctx,text,width) {
@@ -70,7 +76,12 @@
     ];
     ctx.font=font(13);
     const foot=notes.flatMap(text=>wrap(ctx,text,width-pad*2));
-    const tableTop=88+meta.length*22+18;
+    const memo=data.scope==='current'?memoText(data.memo):'';
+    ctx.font=font(15);
+    const memoLines=memo?wrap(ctx,memo,width-pad*2-36):[];
+    const memoTop=88+meta.length*22+4;
+    const memoHeight=memo?48+memoLines.length*22:0;
+    const tableTop=88+meta.length*22+18+(memo?memoHeight+30:0);
     const tableBottom=tableTop+headHeight+body.reduce((sum,r)=>sum+r.height,0);
     const noteTop=tableBottom+26;
     const height=noteTop+(foot.length-1)*21+pad;
@@ -85,6 +96,21 @@
     ctx.fillStyle='#ED2F7B';ctx.fillRect(pad,63,width-pad*2,3);
     ctx.fillStyle='#696979';ctx.font=font(14);
     meta.forEach((text,i)=>ctx.fillText(text,pad,88+i*22));
+    if(memo){
+      // Flat memo area; the table and final notes shift by the measured height.
+      ctx.fillStyle='#F6F6F8';
+      if(typeof ctx.roundRect==='function'){
+        ctx.beginPath();ctx.roundRect(pad+.5,memoTop+.5,width-pad*2-1,memoHeight-1,4);
+        ctx.fill();ctx.strokeStyle='#D6D5DF';ctx.lineWidth=1;ctx.stroke();
+      }else{
+        ctx.fillRect(pad,memoTop,width-pad*2,memoHeight);ctx.fillStyle='#D6D5DF';
+        ctx.fillRect(pad,memoTop,width-pad*2,1);ctx.fillRect(pad,memoTop+memoHeight-1,width-pad*2,1);
+        ctx.fillRect(pad,memoTop,1,memoHeight);ctx.fillRect(width-pad-1,memoTop,1,memoHeight);
+      }
+      ctx.fillStyle='#202052';ctx.font=font(15,true);ctx.fillText('메모',pad+18,memoTop+21);
+      ctx.fillStyle='#252541';ctx.font=font(15);
+      memoLines.forEach((text,i)=>ctx.fillText(text,pad+18,memoTop+46+i*22));
+    }
     ctx.textAlign='right';ctx.font=font(11);
     ctx.fillText('(연, %)',width-pad,tableTop-12);
     const heads=['상품','제공기관','등급',...data.indices.map(i=>names[i])];
@@ -109,5 +135,5 @@
     foot.forEach((text,i)=>ctx.fillText(text,pad,noteTop+i*21));
     return {width,height,pixelWidth:canvas.width,pixelHeight:canvas.height};
   }
-  window.RateExport={snapshot,draw,loadBrand};
+  window.RateExport={snapshot,draw,loadBrand,memoText};
 })();

@@ -15,6 +15,13 @@ assert.equal(initial.title,'2026년 11월 원리금보장상품 금리');
 assert.deepEqual(copy(initial.rows.map(r=>r.id)),copy(run('filteredRows().map(r=>r.id)')));
 const filtersBefore=[el('lineupFilter').value,el('proposalFilter').value,el('sortFilter').value,el('maturitySort').value];
 const all=api.snapshot('all',new Date('2026-11-10T06:00:00Z'));
+const memo='○○기업 제안용\n1년 만기 중심 · AA 이상 상품 비교';
+const withMemo=api.snapshot('current',new Date('2026-11-10T06:00:00Z'),memo);
+assert.equal(withMemo.memo,memo);assert.deepEqual(copy(withMemo.rows),copy(initial.rows));
+assert.equal(api.snapshot('all',undefined,memo).memo,'');
+assert.equal(api.snapshot('current',undefined,' \n ').memo,'');
+assert.equal(api.memoText('😀'.repeat(100)).length,200);
+assert.throws(()=>api.snapshot('current',undefined,'가'.repeat(101)),/100자/);
 const approved=JSON.parse(fs.readFileSync('scripts/fixtures/approved-november-order.json','utf8'));
 assert.deepEqual(copy(all.rows.map(r=>r.id)),approved);
 assert.equal(all.rows.length,98);assert.deepEqual(copy(all.indices),[0,1,2,3]);
@@ -64,6 +71,19 @@ assert(!painted.includes('사업자')&&!painted.includes('라인업')&&!painted.
 assert(painted.includes('상품')&&painted.includes('제공기관')&&painted.includes('등급'));
 assert(painted.includes(selected.rows.at(-1).institution));
 assert.throws(()=>api.draw({getContext:()=>null},all),/브라우저/);
+const memoSourceBefore=run('JSON.stringify(rates)');
+painted.length=0;positions.length=0;
+const plainDimensions=api.draw(canvas,initial);painted.length=0;positions.length=0;
+const memoDimensions=api.draw(canvas,withMemo);
+assert(memoDimensions.height>plainDimensions.height);
+const memoLabel=positions.find(p=>p.text==='메모'),memoBody=positions.find(p=>p.text==='○○기업 제안용');
+assert(memoLabel&&memoBody);assert(memoLabel.y>positions.find(p=>p.text.startsWith('· 정렬기준')).y);
+assert(memoBody.y<positions.find(p=>p.text==='상품').y);
+assert(painted.includes(withMemo.rows.at(-1).institution));
+painted.length=0;api.draw(canvas,{...all,memo});assert(!painted.includes('메모'));
+painted.length=0;api.draw(canvas,{...initial,memo:' '});assert(!painted.includes('메모'));
+assert.equal(run('JSON.stringify(rates)'),memoSourceBefore);
+console.log('PASS: optional current-only memo, unchanged rows/order, 100 Unicode character limit, blank omission and measured memo/table/footer layout.');
 console.log('PASS: current filters/order, all 98 approved IDs, four/all vs selected maturities, status scope, immutable snapshot, no internal data, empty/error handling, filename, Korea time and complete canvas.');
 // Optional native Canvas QA: generate the same production document and PNG.
 if(process.env.RATE_EXPORT_CANVAS_MODULE){
