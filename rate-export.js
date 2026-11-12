@@ -1,5 +1,15 @@
 /* Public export snapshot and document renderer. No internal notes are copied. */
 (() => {
+  let brand=null,brandPromise=null;
+  function loadBrand(){
+    if(!brandPromise)brandPromise=new Promise((resolve,reject)=>{
+      const image=new Image();
+      image.onload=()=>{brand=image;resolve();};
+      image.onerror=()=>{brandPromise=null;reject(Error('로고 이미지를 불러오지 못했습니다. 다시 시도해 주세요.'));};
+      image.src='export-brand.png';
+    });
+    return brandPromise;
+  }
   const names=['1년','1.5년','3년','5년'];
   const label=value=>value==='all'?'전체':value;
   function snapshot(scope, now=new Date()) {
@@ -71,6 +81,7 @@
     ctx.scale(scale,scale);ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,width,height);
     ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#202052';ctx.font=font(25,true);
     ctx.fillText(data.title,pad,38);
+    if(brand)ctx.drawImage(brand,width-pad-175,14,175,175*brand.naturalHeight/brand.naturalWidth);
     ctx.fillStyle='#ED2F7B';ctx.fillRect(pad,63,width-pad*2,3);
     ctx.fillStyle='#696979';ctx.font=font(14);
     meta.forEach((text,i)=>ctx.fillText(text,pad,88+i*22));
@@ -98,5 +109,5 @@
     foot.forEach((text,i)=>ctx.fillText(text,pad,noteTop+i*21));
     return {width,height,pixelWidth:canvas.width,pixelHeight:canvas.height};
   }
-  window.RateExport={snapshot,draw};
+  window.RateExport={snapshot,draw,loadBrand};
 })();

@@ -32,6 +32,7 @@
     message('이미지를 만들고 있습니다…');$('exportClose').focus();
     try{
       await document.fonts?.ready;
+      if(window.RateExport.loadBrand)await window.RateExport.loadBrand();
       // Let the loading state paint before drawing a long table.
       await new Promise(resolve=>window.requestAnimationFrame(resolve));
       if(token!==generation)return;
