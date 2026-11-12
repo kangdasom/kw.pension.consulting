@@ -67,3 +67,10 @@
 .notice-editor-footer>div{display:flex;gap:6px;flex-shrink:0}
 .notice-editor .management-message{margin:6px 0 0;min-height:0}
 @media(max-width:599px){.notice-editor-footer{align-items:flex-start;flex-direction:column}.notice-editor-footer>div{align-self:flex-end}}
+/* Notice publication settings stay compact on mobile and tablet. */
+.notice-publish-settings { margin-top: 8px; font-size: 12px; }
+.notice-publish-settings summary { cursor: pointer; }
+.notice-publish-settings p { line-height: 1.5; overflow-wrap: anywhere; }
+.notice-publish-settings input { box-sizing: border-box; display: block; width: 100%; max-width: 480px; padding: 7px; }
+.notice-publish-settings label { display: block; margin-top: 8px; }
+.notice-publish-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; }

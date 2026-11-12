@@ -84,7 +84,7 @@
   shell.append(admin,basic);
   const options = (values, value) => values.map(v => `<option value="${escapeHtml(v)}" ${v===(value || '')?'selected':''}>${escapeHtml(v || '미설정')}</option>`).join('');
   const select = (values,value,attrs) => `<select ${attrs}>${options(values,value)}</select>`;
-  const securityNote = '<p class="management-notice">관리화면 시제품 · 이 브라우저에만 저장됩니다. 상품담당자 인증은 아직 연결되지 않았습니다.</p>';
+  const securityNote = '<p class="management-notice">금리·한도·기관 관리정보는 이 브라우저에만 저장됩니다. 공지는 GitHub 게시 인증 후 전체 방문자에게 배포됩니다.</p>';
   admin.innerHTML = `${securityNote}<div class="management-heading"><h1>월별 금리·제안가능 관리</h1><span class="source-badge">실제 엑셀 데이터</span></div>
     <div class="management-period"><label>기준 월 <select aria-label="관리 기준 월"><option>${escapeHtml(importData.month)}</option></select></label><button type="button" id="manageImport">엑셀 검증·반영</button></div>
     <p class="management-help" id="managementPeriodHelp">적용기간 ${escapeHtml(importData.start)} ~ ${escapeHtml(importData.end)} · 기본정보의 라인업 Y 상품만 관리합니다. 새 월의 제안가능 상태는 확인부터 시작합니다.</p>
@@ -92,7 +92,14 @@
       <div class="notice-editor-heading"><h2 id="noticeEditorTitle">공지작성</h2><span id="noticeDirty">변경사항 없음</span></div>
       <label for="noticeText">공지 내용</label>
       <textarea id="noticeText" rows="3" maxlength="3000" placeholder="금리표 이용자에게 안내할 내용을 작성해주세요." aria-describedby="noticeHelp"></textarea>
-      <div class="notice-editor-footer"><p id="noticeHelp">저장한 내용은 공지사항 상단에 표시됩니다. 내용을 비워 저장하면 배너가 숨겨집니다. 이 브라우저에만 저장됩니다.</p><div><button type="button" id="noticeCancel">변경 취소</button><button type="button" class="management-primary" id="noticeSave">공지 저장</button></div></div>
+      <div class="notice-editor-footer"><p id="noticeHelp">저장하면 전체 방문자에게 공지가 배포됩니다. 배포 완료까지 잠시 걸립니다. 내용을 비워 게시하면 공지가 내려갑니다.</p><div><button type="button" id="noticeCancel">변경 취소</button><button type="button" class="management-primary" id="noticeSave">공지 저장·배포</button></div></div>
+      <details class="notice-publish-settings"><summary>게시 인증 설정</summary>
+        <p>GitHub에서 이 저장소만 선택한 만료일 있는 Fine-grained token을 만들고 Contents를 Read and write로 설정해주세요. 키는 매 게시 시 입력하며 저장하지 않습니다.</p>
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">GitHub 게시 인증키 만들기</a>
+        <label for="noticeCredential">GitHub 게시 인증키</label><input type="password" id="noticeCredential" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="noticeCredentialHelp">
+        <p id="noticeCredentialHelp">대상: kangdasom/kw.pension.consulting · 입력한 키는 GitHub API로만 전송합니다.</p>
+      </details>
+      <div class="notice-publish-tools"><button type="button" id="noticeLatest">최신 게시본 불러오기</button><button type="button" id="noticeLegacy" hidden>이 브라우저의 이전 공지 불러오기</button><a href="https://github.com/kangdasom/kw.pension.consulting/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">배포 내역</a></div>
       <p id="noticeMessage" class="management-message" role="status"></p>
     </section>
     <div id="managementImport" hidden></div>
@@ -314,37 +321,4 @@
     }
   };
   renderMonthly();renderBasic();updateDirty();render();
-})();
-
-// Independent notice content: never write the rate or management storage keys.
-(() => {
-  const key='db-rate-notice-v1';
-  const text=document.getElementById('noticeText');
-  const banner=document.getElementById('noticeBanner');
-  const message=document.getElementById('noticeMessage');
-  let saved='';
-  try { saved=localStorage.getItem(key) || ''; }
-  catch { message.textContent='저장된 공지를 읽지 못했습니다. 브라우저 저장 권한을 확인해주세요.'; }
-  text.value=saved;
-  const dirty=()=>text.value!==saved;
-  function updateDirty(){
-    document.getElementById('noticeDirty').textContent=dirty()?'미저장 변경사항 있음':'변경사항 없음';
-    document.getElementById('noticeCancel').disabled=!dirty();
-  }
-  function renderNotice(){
-    document.getElementById('noticeBannerText').textContent=saved;
-    banner.hidden=!saved.trim();
-  }
-  text.addEventListener('input',()=>{message.textContent='';updateDirty();});
-  document.getElementById('noticeSave').onclick=()=>{
-    const next=text.value.trim();
-    try { localStorage.setItem(key,next); }
-    catch {message.textContent='공지를 저장하지 못했습니다. 브라우저 저장 권한이나 여유 공간을 확인한 후 다시 저장해주세요. 작성 내용은 유지됩니다.';return;}
-    saved=next;text.value=saved;renderNotice();updateDirty();
-    message.textContent=saved?'공지를 저장했습니다. 공지사항 배너에 반영되었습니다.':'빈 공지를 저장했습니다. 공지사항 배너를 숨겼습니다.';
-  };
-  document.getElementById('noticeCancel').onclick=()=>{text.value=saved;updateDirty();message.textContent='마지막 저장 내용으로 되돌렸습니다.';};
-  window.addEventListener('beforeunload',event=>{if(dirty()){event.preventDefault();event.returnValue='';}});
-  window.RateNotice={hasUnsaved:dirty};
-  renderNotice();updateDirty();
 })();

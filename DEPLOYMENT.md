@@ -30,7 +30,23 @@
 
 - 기존 금리·초기 관리설정·화면과 기능을 그대로 배포한다. 이 데이터와 화면은 사이트 방문자가 열람할 수 있다.
 - 원본 엑셀·PROJECT_BRIEF/CONTEXT·AGENTS·outputs·과거 대기 금리 파일·브라우저 localStorage는 업로드하지 않는다. 테스트와 fixture는 Git 저장소에만 포함하며 Pages 산출물에는 포함하지 않는다.
-- 업로드 금리·제안가능·공지·관리정보 저장은 기존처럼 **기기별 브라우저 한정**이다. 담당자의 수정이 다른 직원에게 자동 공유되지 않는다.
+- 업로드 금리·제안가능·관리정보 저장은 **기기별 브라우저 한정**이다. 공지는 아래의 GitHub 게시 방식으로 전체 방문자에게 공유한다.
 - 기존 로컬 주소의 브라우저 저장값은 GitHub Pages 주소로 자동 이전되지 않는다.
 - 로그인·서버 권한 검사는 추가하지 않는다. 직원 전용 인증을 제공하는 배포로 취급하지 않는다.
 - 실제 배포 성공은 Actions의 deploy 성공과 실제 URL의 HTTP/화면 확인 후에만 확정한다.
+
+## 공지 작성 → 저장·자동 배포
+
+공지는 `notice.json` 파일로 보관하며, 두 번째 탭의 `공지 저장·배포`가 GitHub Contents API를 통해 main의 이 파일만 수정한다. 기존 main push 워크플로가 검사 후 사이트 전체를 배포한다. 방문자는 배포된 notice.json을 읽으며 브라우저별 이전 공지가 공용 공지를 덮어쓰지 않는다. 작성한 공지와 수정 이력은 공개 저장소에 남는다.
+
+게시 담당자는 GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens에서 만료일을 정하고, Resource owner=kangdasom, Only select repositories=kw.pension.consulting, Repository permissions의 Contents=Read and write로 생성한다. 이 권한은 파일 한 개로 제한되지 않고 해당 저장소 내용에 적용되므로 담당자가 보관한다. Actions·Workflows 쓰기 권한은 필요 없다. Branch protection이 직접 수정을 금지하면 정책에 따라 게시가 거절된다.
+
+공식 HTTPS 사이트의 두 번째 탭 → 공지 작성 → 게시 인증 설정에 키 입력 → 공지 저장·배포 순으로 사용한다. 키는 사이트 코드·Git·localStorage·sessionStorage에 저장하지 않고 요청 시작 시 입력창에서도 지운다. GitHub API에 Authorization 헤더로만 보낸다. 이 방식은 GitHub 권한으로 게시를 인증하며 별도의 직원 로그인 기능을 구현한 것은 아니다. 키를 채팅으로 전달하지 않는다.
+
+`GitHub에 저장`은 배포 완료와 다르다. 화면은 최대 약 10분 동안 배포 파일의 revision을 확인하고 실제 게시 내용을 읽었을 때만 완료로 표시한다. 검사 실패·배포 승인 대기·통신 문제는 `배포 내역`에서 확인한다. 확인 시간 내 완료하지 못하면 GitHub 저장은 유지되며 같은 내용으로 재저장하면 중복 커밋 없이 다시 확인한다. 실패한 워크플로는 GitHub에서 재실행한다. 빈 내용 게시도 동일한 배포 과정을 거쳐 공지를 내린다.
+
+기존 브라우저 공지는 `이 브라우저의 이전 공지 불러오기`로 편집기에 가져와 명시적으로 게시한다. 기존 로컬 값을 자동 게시하거나 삭제하지 않는다. 새 접속·공지 팝업 열기·다시 창으로 돌아왔을 때 공지를 새로 읽는다. 이미 열려 있는 화면 전체의 실시간 동기화는 아니다.
+
+동시 수정은 최신 파일 SHA와 읽었던 revision으로 검사한다. 충돌하면 초안을 유지하고 최신 게시본을 확인하도록 안내한다. 저장 요청의 통신이 끊긴 경우 실제 저장 여부가 불명확하므로 최신 게시본·배포 내역을 먼저 확인한다.
+
+검사: `node scripts/check-notice-publish.cjs` (자동 배포 필수), `RATE_STATUS_PLAYWRIGHT`를 지정한 `node scripts/check-notice-ui.cjs` (격리 Edge, API 저장 모사). 실제 키 발급과 사용자의 첫 공지 게시 검증은 별도다.

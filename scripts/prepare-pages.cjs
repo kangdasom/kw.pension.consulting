@@ -30,7 +30,7 @@ function include(reference, parent = 'index.html') {
   assert(!/^(?:[a-z]+:|\/)/i.test(reference), `Non-relative asset: ${reference}`);
   const name = path.posix.normalize(path.posix.join(path.posix.dirname(parent), reference.split(/[?#]/)[0]));
   assert(!name.startsWith('..') && !name.includes('\\'), `Unsafe asset path: ${name}`);
-  assert(/\.(?:html|css|js|woff2|png|svg|jpg|jpeg|webp|ico)$/.test(name), `Unexpected asset: ${name}`);
+  assert(/\.(?:html|css|js|woff2|png|svg|jpg|jpeg|webp|ico)$/.test(name) || name === 'notice.json', `Unexpected asset: ${name}`);
   if (files.has(name)) return;
   const source = path.join(root, name);
   assert(fs.statSync(source).isFile() && !fs.lstatSync(source).isSymbolicLink(), `Invalid asset: ${name}`);
@@ -49,6 +49,8 @@ function include(reference, parent = 'index.html') {
   }
 }
 include('index.html');
+audit('notice.json', fs.readFileSync(path.join(root, 'notice.json'), 'utf8'));
+include('notice.json');
 // Font redistribution requires the accompanying license.
 files.add('assets/fonts/pretendard/LICENSE.txt');
 // Include .nojekyll even though the Actions deployment bypasses Jekyll.

@@ -5,6 +5,7 @@
 !/*.html
 !/*.css
 !/*.js
+!/notice.json
 /rates-data.november.pending.js
 !/assets/
 /assets/*
@@ -24,6 +25,8 @@
 !/scripts/check-rate-export.cjs
 !/scripts/check-rate-export-ui.cjs
 !/scripts/check-rate-upload.cjs
+!/scripts/check-notice-publish.cjs
+!/scripts/check-notice-ui.cjs
 !/scripts/fixtures/
 /scripts/fixtures/*
 !/scripts/fixtures/rates-july.js
