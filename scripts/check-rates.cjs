@@ -27,7 +27,7 @@ render();
 `,context);
 assert.match(el('rateTableBody').innerHTML,/확인/);
 assert.match(el('rateTableBody').innerHTML,/원본 Sheet1/);
-assert.equal(context.document.title,'2026년 11월 원리금보장상품 금리');
+assert.equal(context.document.title,'퇴직연금 원리금보장상품 금리표');
 assert.match(el('heading-child').textContent,/2026\.11\.01 ~ 2026\.11\.30/);
 assert.match(el('importState').textContent,/2026년 11월 금리 반영 완료/);
 console.log('PASS: November reconciliation, 98 products, 407 terms, exclusions, GIC truncation, filters, sorting, approved source and title.');

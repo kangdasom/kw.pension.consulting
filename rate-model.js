@@ -100,7 +100,7 @@ els.sortFilter.value='rate';
 document.getElementById('maturitySort').value='0';
 const heading = document.querySelector('.page-heading');
 heading.querySelector('h1').textContent=`${monthLabel} 원리금보장상품 금리`;
-document.title = `${monthLabel} 원리금보장상품 금리`;
+document.title = '퇴직연금 원리금보장상품 금리표';
 heading.querySelector('p').textContent=`적용기간 : ${importData.start.replaceAll('-','.')} ~ ${importData.end.replaceAll('-','.')}`;
 document.querySelector('.table-meta').textContent=`원본 엑셀 · DB금리 · ${importData.acceptedTerms}개 상품·만기 / ${rates.length}개 상품`;
 const validation=document.createElement('section');
@@ -112,7 +112,7 @@ function activateRateSource(next){
   importData=next;rates=next.products;window.RATE_IMPORT=next;
   monthLabel=next.month.replace(/^(\d{4})-0?(\d+)$/, '$1년 $2월');
   heading.querySelector('h1').textContent=`${monthLabel} 원리금보장상품 금리`;
-  document.title=`${monthLabel} 원리금보장상품 금리`;
+  document.title='퇴직연금 원리금보장상품 금리표';
   heading.querySelector('p').textContent=`적용기간 : ${next.start.replaceAll('-','.')} ~ ${next.end.replaceAll('-','.')}`;
   document.querySelector('.table-meta').textContent=`원본 엑셀 · DB금리 · ${next.acceptedTerms}개 상품·만기 / ${rates.length}개 상품`;
 }
