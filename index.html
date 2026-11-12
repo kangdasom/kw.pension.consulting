@@ -49,6 +49,7 @@
       <link rel="stylesheet" href="fonts.css" />
       <link rel="stylesheet" href="rate-upload.css" />
       <link rel="stylesheet" href="sales-ranking.css" />
+      <link rel="stylesheet" href="design-refresh.css" />
   </head>
   <body>
     <main class="app-shell">
@@ -56,6 +57,7 @@
         <button id="viewModeButton" class="view-mode-button" type="button" aria-pressed="false">PC버전 보기</button>
         <div class="brand-lockup">
           <img id="brandLogoVisible" class="brand-logo-visible" alt="키움증권" />
+          <span class="brand-service">퇴직연금</span>
         </div>
       </header>
 
@@ -70,6 +72,7 @@
       </section>
 
       <section class="filter-panel" aria-label="금리표 조건 필터">
+        <div class="filter-heading"><h2>검색 조건</h2><button class="reset-button" id="resetButton" type="button" aria-label="조회 조건 초기화"><span>초기화</span> ↻</button></div>
         <div class="filter-row primary-filters">
           <label class="filter-control">
             <span>기간</span>
@@ -114,7 +117,6 @@
           <p class="filter-summary" id="filterSummary" aria-live="polite"></p>
           <button class="view-all-button" id="viewAllButton" type="button" title="라인업·제안가능 조건을 전체로 변경">전체보기</button>
           <button class="more-filter-button" id="moreFilterButton" type="button" aria-expanded="false" aria-controls="secondaryFilters">상세조건 <span>⌄</span></button>
-          <button class="reset-button" id="resetButton" type="button" aria-label="조회 조건 초기화">↻<span>초기화</span></button>
         </div>
         <div class="filter-row secondary-filters" id="secondaryFilters" hidden>
           <label class="filter-control compact"><span>사업자여부</span><select id="pensionFilter"><option value="all">전체</option><option value="Y">Y</option><option value="N">N</option></select></label>
@@ -124,7 +126,7 @@
       </section>
 
       <section class="table-toolbar">
-        <div class="result-count">조회상품 <strong id="resultCount">0</strong></div>
+        <div class="result-count">조회 결과 <strong id="resultCount">0</strong></div>
         <div class="toolbar-actions"><label class="sort-control"><span>정렬</span><select id="sortFilter"><option value="default">상품군별 기본순</option><option value="rate" selected>만기 금리 높은 순</option><option value="rating">신용등급 높은 순</option></select></label><label class="maturity-sort" id="maturitySortWrap"><span>만기</span><select id="maturitySort"><option value="0">1년</option><option value="1">1.5년</option><option value="2">3년</option><option value="3">5년</option></select></label><button class="primary-button" id="saveButton" type="button">금리표 저장</button></div>
       </section>
 

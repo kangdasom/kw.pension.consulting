@@ -1,0 +1,113 @@
+/* Reference-led visual refresh. Rate data, table geometry and actions stay shared. */
+:root{--navy:#20234f;--pink:#e92879;--ink:#292c3e;--muted:#777984;--line:#dddde7}
+body{background:#f5f6f9;color:var(--ink)}
+.app-shell{background:#fff}
+.topbar{height:72px!important;padding:0 6px!important;margin-inline:0!important;justify-content:space-between;border-bottom:0!important;gap:12px}
+.topbar .brand-lockup{width:auto;min-width:0;justify-content:flex-start;gap:0;letter-spacing:-.04em}
+.topbar .brand-logo-visible{width:220px;max-width:none;height:auto;clip-path:inset(0 32% 0 0);margin-left:-70px;margin-right:-65px;flex:none}
+.app-shell.management-active .topbar{margin-inline:0!important}
+.brand-service{border-left:1px solid #a6a7b3;padding-left:9px;margin-left:4px;color:var(--navy);font-size:17px;font-weight:700;white-space:nowrap}
+.topbar .view-mode-button{position:static;flex:none;font-size:10px;min-height:30px;padding:4px 7px;border:1px solid #e4e4eb;border-radius:6px;background:#fff;color:#737583;order:2}
+.main-tabs{margin:0 0 4px;gap:0;border-bottom:1px solid #dddde6}
+.main-tabs button{min-height:49px;font-size:14px;color:#757681;font-weight:600;border-bottom-width:3px;letter-spacing:-.04em}
+.main-tabs button[aria-selected=true]{color:var(--navy);font-weight:750;border-bottom-color:var(--pink)}
+#panel-sales .page-heading{padding:20px 0 15px;gap:8px;align-items:center}
+#panel-sales .page-heading h1{font-size:17px;line-height:1.4;font-weight:750;letter-spacing:-.055em;margin:0 0 5px;color:var(--navy)}
+#panel-sales .page-heading p{font-size:11px;color:#7a7b85;margin:0}
+#panel-sales .page-heading .outline-button{font-size:11px;font-weight:650;min-height:34px;padding:4px 0;flex:none;color:var(--navy)}
+.info-icon{width:18px;height:18px;font-size:12px;margin-right:4px}
+.sales-view-tabs{gap:6px;margin:0 0 14px;padding:0;border:0}
+.sales-view-tabs button{height:34px;min-height:34px;line-height:1.2;margin:0;padding:0 18px;border:0;border-radius:24px;background:#f1f1f5;color:#767783;font-size:12px;font-weight:550}
+.sales-view-tabs button[aria-selected=true]{border:0;background:#272958;color:#fff;font-weight:650}
+.sales-view-tabs button[aria-selected=true]::before{display:none}
+#panel-sales .filter-panel{display:block;padding:12px 11px 0;border:0;border-radius:10px;background:#f4f4f7;box-shadow:none;margin:0 0 10px}
+.filter-heading{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;gap:12px}
+.filter-heading h2{margin:0;color:#30313c;font-size:13px;font-weight:650;letter-spacing:-.03em}
+.filter-heading .reset-button{display:flex;align-items:center;gap:4px;min-width:0;width:auto;height:26px;min-height:26px;padding:0;border:0;border-radius:0;background:transparent;color:#777984;font:inherit;font-size:12px;font-weight:450;cursor:pointer}
+.filter-heading .reset-button span{position:static;width:auto;height:auto;overflow:visible;clip-path:none}
+#panel-sales .primary-filters{gap:7px}
+#panel-sales .primary-filters select,#panel-sales .primary-filters .select-trigger{height:36px;border:1px solid #dcdde5;border-radius:6px;background:#fff;color:#303244;font-size:12px;font-weight:450;padding-inline:9px}
+#panel-sales .primary-filters select{padding-right:17px}
+#panel-sales .filter-summary-row{min-height:35px;gap:10px;padding-top:0}
+#panel-sales .filter-summary{font-size:10px;color:#858591}
+#panel-sales .filter-summary b{color:#d9236d;font-weight:550}
+#panel-sales .filter-summary-row .more-filter-button{font-size:10px;min-height:32px;height:32px;color:#565873}
+#panel-sales .filter-summary-row .view-all-button{font-size:10px;color:#656577}
+#panel-sales .secondary-filters{padding-bottom:11px;border-top-color:#e0e0e9}
+.multi-menu{border-radius:8px;border-color:#e0e0e8;box-shadow:0 8px 24px #21254b16;padding:6px;z-index:6}
+.multi-menu label{border-radius:4px}
+.multi-menu label:hover{background:#f4f3f9}
+.multi-menu input{accent-color:var(--pink)}
+#panel-sales .table-toolbar{padding:7px 0 5px;gap:6px}
+#panel-sales .result-count{font-size:12px;font-weight:700;color:var(--navy);white-space:nowrap}
+#panel-sales .result-count strong{font-size:17px;font-weight:750;color:var(--pink)}
+#panel-sales .toolbar-actions{gap:4px}
+#panel-sales .table-toolbar select{height:32px;border:1px solid #e1e1e8;background:#fff;border-radius:5px;font-size:10px;color:#676979}
+#panel-sales .table-toolbar #saveButton{height:32px;border:1px solid #d4d4e0;border-radius:5px;font-size:10px;background:#fff;color:var(--navy);padding-inline:8px;box-shadow:none}
+#panel-sales .rate-unit{padding:0 0 5px;font-size:10px;color:#85858e}
+.table-frame th,.table-frame .sales-ranking-table th,.table-frame .sales-ranking-table th.ranking-institution{background:#eae8f2;color:var(--navy)}
+.table-frame .sales-rate-table th{height:35px;font-size:11px;font-weight:700}
+.table-frame .sales-rate-table td{height:37px;border-bottom-color:#dfdfe9}
+.table-frame .sales-rate-table .product-name{font-weight:400;color:#34375b}
+.table-frame .sales-rate-table .institution{font-weight:450;color:#3b3d48}
+.table-frame .sales-rate-table .grade{font-weight:450;color:#777781}
+.table-frame tbody .rate,.table-frame tbody .rate.gic{font-weight:700;color:#27294f}
+.table-frame .rate-status-dim,.table-frame .rate-status-dim small{color:#b9b8c5}
+.table-frame .gic small{font-weight:400}
+.ranking-controls{padding:10px 11px;background:#f4f4f7;border:0;border-radius:10px}
+.ranking-choices{gap:5px}
+.ranking-controls button,.ranking-controls select{border-color:#dddde7;border-radius:6px}
+.ranking-choices button[aria-pressed=true]{background:#292b58;border-color:#292b58}
+.ranking-filters label{color:#777984}
+#rankingSummary{padding:5px 0;color:#7c7d88}
+.management-notice{border-radius:5px;background:#f5f5f8}
+.management-panel input:not([type=checkbox]),.management-panel select,.management-panel button{border-color:#dcdce6;border-radius:5px}
+.management-panel .management-primary{background:#e92879;border-color:#e92879}
+.management-bulk{background:#f4f4f7;border-radius:7px}
+.management-table th{background:#eae8f2;color:var(--navy)}
+.basic-subtabs button{border-radius:20px}
+.basic-subtabs button[aria-pressed=true]{background:#292b58;border-color:#292b58}
+.modal-backdrop{background:#15182e70;backdrop-filter:blur(2px)}
+.modal{border-radius:14px;box-shadow:0 18px 70px #15182e33;padding:27px 22px}
+.modal h2{color:var(--navy);font-size:21px;letter-spacing:-.04em}
+.guide-list b{color:var(--navy)}
+#infoModal .guide-list ul,#infoModal .guide-list p{font-size:13px}
+#infoModal .guide-list>div>b{font-size:14px}
+#infoModal .notice-banner p{font-size:15px}
+.modal .primary-button{background:#292b58;box-shadow:none;border-radius:6px}
+.save-option{border-radius:8px}
+.save-option.selected{border-color:#e92879;background:#fff4f8}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #db2976;outline-offset:3px}
+@media(max-width:374px){
+ .topbar{gap:5px;height:65px!important}
+ .topbar .brand-logo-visible{width:190px;margin-left:-60px;margin-right:-57px}
+ .brand-service{font-size:15px;padding-left:6px;margin-left:0}
+ .topbar .view-mode-button{font-size:9px;padding-inline:5px}
+ .main-tabs button{font-size:12px;min-height:44px}
+ #panel-sales .page-heading h1{font-size:14px}
+ #panel-sales .page-heading p{font-size:10px}
+ #panel-sales .page-heading .outline-button{font-size:10px}
+ #panel-sales .primary-filters select,#panel-sales .primary-filters .select-trigger{font-size:11px;padding-left:6px}
+ #panel-sales .filter-panel{padding-inline:9px}
+ #panel-sales .result-count{font-size:11px}
+ #panel-sales .result-count strong{font-size:15px}
+ #panel-sales .toolbar-actions{gap:3px}
+ #panel-sales .table-toolbar .sort-control{width:92px}
+ #panel-sales .table-toolbar .maturity-sort{width:43px}
+ #panel-sales .table-toolbar #saveButton{padding-inline:5px;font-size:9px}
+ .table-frame .sales-rate-table th{font-size:10px}
+}
+@media(min-width:960px){
+ body.desktop-view .topbar{height:80px!important;padding:0!important}
+ body.desktop-view .brand-service{font-size:21px}
+ body.desktop-view .topbar .view-mode-button{font-size:12px;padding-inline:12px}
+ body.desktop-view #panel-sales .filter-panel{display:block;padding:15px 18px 0}
+ body.desktop-view #panel-sales .primary-filters{max-width:720px}
+ body.desktop-view #panel-sales .filter-summary-row{justify-content:flex-end}
+ body.desktop-view #panel-sales .filter-summary{margin-right:auto;flex:1}
+ body.desktop-view .filter-heading h2{font-size:15px}
+ body.desktop-view #panel-sales .table-toolbar{padding:12px 0 6px}
+ body.desktop-view #panel-sales .table-toolbar select,body.desktop-view #panel-sales .table-toolbar #saveButton{height:36px;font-size:12px}
+ body.desktop-view #panel-sales .result-count{font-size:14px}
+ body.desktop-view .table-frame .sales-rate-table th{font-size:13px}
+}

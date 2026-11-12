@@ -70,7 +70,7 @@
   const shell = document.querySelector('.app-shell');
   const nav = document.createElement('div');
   nav.className = 'main-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','금리표 및 상품 관리');
-  nav.innerHTML = [['sales','원리금공시금리표'],['monthly','금리및한도관리'],['basic','기관정보관리']].map(([id,label],i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
+  nav.innerHTML = [['sales','금리조회'],['monthly','금리·한도관리'],['basic','기관정보']].map(([id,label],i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
   const sales = document.createElement('section');
   sales.id = 'panel-sales'; sales.setAttribute('role','tabpanel'); sales.setAttribute('aria-labelledby','tab-sales');
   const children = [...shell.children].filter(child => !child.classList.contains('topbar'));
