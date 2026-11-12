@@ -102,14 +102,17 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 
 /* One typography scale for both sales tables, including their floating headers.
    Explicit priority replaces the earlier per-column font overrides. */
-.table-frame{--sales-head-size:11px;--sales-body-size:10px;--sales-rate-size:13px;--sales-subrate-size:10px}
+.table-frame{--sales-head-size:11px;--sales-body-size:10px;--sales-rate-size:13px;--sales-subrate-size:10px;--sales-head-height:35px}
 .table-frame :is(.sales-rate-table,.sales-ranking-table) :is(th,td){text-align:center!important;letter-spacing:-.02em;line-height:1.35}
-.table-frame :is(.sales-rate-table,.sales-ranking-table) thead th{font-size:var(--sales-head-size)!important;font-weight:700!important}
+.table-frame :is(.sales-rate-table,.sales-ranking-table) thead th{font-size:var(--sales-head-size)!important;font-weight:700!important;color:var(--navy)!important;height:var(--sales-head-height);vertical-align:middle}
 .table-frame :is(.sales-rate-table,.sales-ranking-table) tbody td{font-size:var(--sales-body-size)!important;font-weight:400!important}
 .table-frame :is(.sales-rate-table,.sales-ranking-table) tbody td.rate{font-size:var(--sales-rate-size)!important;font-weight:700!important;font-variant-numeric:tabular-nums}
 .table-frame :is(.sales-rate-table,.sales-ranking-table) .gic small{font-size:var(--sales-subrate-size)!important;font-weight:400!important}
+.table-frame .sales-ranking-table td.ranking-institution{color:#3b3d48}
+.table-frame .sales-ranking-table td.ranking-product{color:#34375b}
+.table-frame .sales-ranking-table td.ranking-grade{color:#777781}
 @media(max-width:374px){.table-frame{--sales-head-size:10px}}
-@media(min-width:960px){body.desktop-view .table-frame{--sales-head-size:13px;--sales-body-size:12px;--sales-rate-size:15px;--sales-subrate-size:12px}}
+@media(min-width:960px){body.desktop-view .table-frame{--sales-head-size:13px;--sales-body-size:12px;--sales-rate-size:15px;--sales-subrate-size:12px;--sales-head-height:38px}}
 @media(min-width:960px){
  body.desktop-view .topbar{height:80px!important;padding:0!important}
  body.desktop-view .brand-service{font-size:21px}
