@@ -84,7 +84,7 @@
   shell.append(admin,basic);
   const options = (values, value) => values.map(v => `<option value="${escapeHtml(v)}" ${v===(value || '')?'selected':''}>${escapeHtml(v || '미설정')}</option>`).join('');
   const select = (values,value,attrs) => `<select ${attrs}>${options(values,value)}</select>`;
-  const securityNote = '<p class="management-notice">금리·한도·기관 관리정보는 이 브라우저에만 저장됩니다. 공지는 GitHub 게시 인증 후 전체 방문자에게 배포됩니다.</p>';
+  const securityNote = '<p class="management-notice">금리·한도·기관 관리정보는 이 브라우저에만 저장됩니다. 공지는 kangdasom GitHub 계정으로 게시 요청을 제출한 뒤 전체 방문자에게 배포됩니다.</p>';
   admin.innerHTML = `${securityNote}<div class="management-heading"><h1>월별 금리·제안가능 관리</h1><span class="source-badge">실제 엑셀 데이터</span></div>
     <div class="management-period"><label>기준 월 <select aria-label="관리 기준 월"><option>${escapeHtml(importData.month)}</option></select></label><button type="button" id="manageImport">엑셀 검증·반영</button></div>
     <p class="management-help" id="managementPeriodHelp">적용기간 ${escapeHtml(importData.start)} ~ ${escapeHtml(importData.end)} · 기본정보의 라인업 Y 상품만 관리합니다. 새 월의 제안가능 상태는 확인부터 시작합니다.</p>
@@ -92,14 +92,9 @@
       <div class="notice-editor-heading"><h2 id="noticeEditorTitle">공지작성</h2><span id="noticeDirty">변경사항 없음</span></div>
       <label for="noticeText">공지 내용</label>
       <textarea id="noticeText" rows="3" maxlength="3000" placeholder="금리표 이용자에게 안내할 내용을 작성해주세요." aria-describedby="noticeHelp"></textarea>
-      <div class="notice-editor-footer"><p id="noticeHelp">저장하면 전체 방문자에게 공지가 배포됩니다. 배포 완료까지 잠시 걸립니다. 내용을 비워 게시하면 공지가 내려갑니다.</p><div><button type="button" id="noticeCancel">변경 취소</button><button type="button" class="management-primary" id="noticeSave">공지 저장·배포</button></div></div>
-      <details class="notice-publish-settings"><summary>게시 인증 설정</summary>
-        <p>GitHub에서 이 저장소만 선택한 만료일 있는 Fine-grained token을 만들고 Contents를 Read and write로 설정해주세요. 키는 매 게시 시 입력하며 저장하지 않습니다.</p>
-        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">GitHub 게시 인증키 만들기</a>
-        <label for="noticeCredential">GitHub 게시 인증키</label><input type="password" id="noticeCredential" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="noticeCredentialHelp">
-        <p id="noticeCredentialHelp">대상: kangdasom/kw.pension.consulting · 입력한 키는 GitHub API로만 전송합니다.</p>
-      </details>
-      <div class="notice-publish-tools"><button type="button" id="noticeLatest">최신 게시본 불러오기</button><button type="button" id="noticeLegacy" hidden>이 브라우저의 이전 공지 불러오기</button><a href="https://github.com/kangdasom/kw.pension.consulting/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">배포 내역</a></div>
+      <div class="notice-editor-footer"><p id="noticeHelp">GitHub에서 kangdasom 계정으로 로그인한 뒤 Submit new issue(또는 Create)를 누르면 자동 배포됩니다. 로그인 상태가 유지되면 다음에도 인증키 없이 게시할 수 있습니다. 내용을 비워 게시하면 공지가 내려갑니다.</p><div><button type="button" id="noticeCancel">변경 취소</button><button type="button" class="management-primary" id="noticeSave">GitHub 로그인으로 게시</button></div></div>
+      <div id="noticeRequest" class="notice-request" hidden><p id="noticeRequestHelp"></p><textarea id="noticeRequestBody" readonly rows="3" aria-label="긴 공지 게시 요청 복사용" hidden></textarea><button id="noticeCopyRequest" type="button" hidden>게시 요청 복사</button><a id="noticeSubmit" target="_blank" rel="noopener noreferrer">GitHub 게시 요청 열기</a> <button id="noticeStop" type="button">배포 확인 중단</button></div>
+      <div class="notice-publish-tools"><button type="button" id="noticeLatest">최신 게시본 불러오기</button><button type="button" id="noticeLegacy" hidden>이 브라우저의 이전 공지 불러오기</button><a href="https://github.com/kangdasom/kw.pension.consulting/actions/workflows/publish-notice.yml" target="_blank" rel="noopener noreferrer">게시 처리 내역</a><a href="https://github.com/kangdasom/kw.pension.consulting/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">배포 내역</a></div>
       <p id="noticeMessage" class="management-message" role="status"></p>
     </section>
     <div id="managementImport" hidden></div>

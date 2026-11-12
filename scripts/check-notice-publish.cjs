@@ -1,35 +1,34 @@
-const assert=require('node:assert/strict');
+const assert=require('node:assert/strict'),fs=require('node:fs');
 const api=require('../notice-publish.js');
-const initial={text:'기존 공지',revision:'old',updatedAt:null};
-const bytes=value=>Buffer.from(JSON.stringify(value)).toString('base64');
-let state={...initial}, status=200, calls=[];
-global.fetch=async(url,options)=>{
-  calls.push({url:String(url),options});
-  if(options.method==='PUT') {
-    if(status!==200)return {ok:false,status};
-    const body=JSON.parse(options.body);
-    assert.equal(body.branch,'main');assert.equal(body.sha,'file-sha');
-    state=JSON.parse(Buffer.from(body.content,'base64').toString('utf8'));
-    return {ok:true,status:200};
-  }
-  return {ok:true,json:async()=>({sha:'file-sha',content:bytes(state)})};
-};
+const current={text:'기존 공지',revision:'old',updatedAt:null};
+const request=api.prepare('한글 공지\n<em>문자 그대로</em> 😀',current);
+const event={action:'opened',repository:{full_name:api.repository,id:1317770573},sender:{login:'kangdasom',id:311216178},issue:{number:1,title:api.title,user:{login:'kangdasom',id:311216178},body:request.body}};
+assert.equal(new URL(request.url).searchParams.get('body'),request.body);
+const next=api.parseIssue(event,current);assert.equal(next.text,request.notice.text);assert(next.updatedAt);
+assert.equal(api.parseIssue(event,next),next);
+for(const mutate of [e=>e.sender.login='other',e=>e.sender.id=1,e=>e.issue.user.id=1,e=>e.repository.id=1,e=>e.action='edited',e=>e.issue.pull_request={},e=>e.issue.title='other',e=>e.issue.body='invalid']){
+ const invalid=structuredClone(event);mutate(invalid);assert.throws(()=>api.parseIssue(invalid,current));
+}
+assert.throws(()=>api.parseIssue(event,{...current,revision:'newer'}),/먼저 수정/);
+assert.throws(()=>api.prepare('가'.repeat(3001),current),/3000/);
+const long=api.prepare('가'.repeat(3000),current);assert(long.needsPaste);assert(long.url.length<7500);assert(!new URL(long.url).searchParams.has('body'));
+const blank=api.prepare(' \n ',current);assert.equal(api.parseIssue({...event,issue:{...event.issue,body:blank.body}},current).text,'');
+// Execute the exact workflow script with the GitHub API mocked, including dispatch.
+const workflow=fs.readFileSync('.github/workflows/publish-notice.yml','utf8');
+const script=workflow.split('script: |\n')[1].split('\n').map(line=>line.replace(/^ {12}/,'')).join('\n');
+const run=new (Object.getPrototypeOf(async function(){}).constructor)('github','context','require',script);
 (async()=>{
-  await assert.rejects(api.publish('새 공지',initial,''),/인증키/);
-  assert.equal(calls.length,0);
-  const next=await api.publish('한글 공지\n<em>문자 그대로</em> 😀',initial,'test-credential');
-  assert.equal(next.text,state.text);assert.notEqual(next.revision,initial.revision);
-  assert.equal(calls[1].options.headers.Authorization,'Bearer test-credential');
-  assert(!calls[1].options.body.includes('test-credential'));
-  calls=[];await api.publish(state.text,initial,'test-credential');assert.equal(calls.length,1);
-  await assert.rejects(api.publish('다른 수정',initial,'test-credential'),/다른 게시/);
-  status=409;await assert.rejects(api.publish('다른 수정',state,'test-credential'),/충돌/);
-  status=403;await assert.rejects(api.publish('다른 수정',state,'test-credential'),/권한/);
-  status=401;await assert.rejects(api.publish('다른 수정',state,'test-credential'),/만료/);
-  status=200;const empty=await api.publish('',state,'test-credential');assert.equal(empty.text,'');
-  await assert.rejects(api.publish('가'.repeat(3001),state,'test-credential'),/3000/);
-  assert.throws(()=>api.validate({text:12,revision:'bad'}),/형식/);
-  global.fetch=async()=>{throw Error('test-credential');};
-  await assert.rejects(api.publish('새 공지',state,'test-credential'),error=>!error.message.includes('test-credential')&&/통신/.test(error.message));
-  console.log('PASS: UTF-8 notice publication, SHA conflict guard, empty notice, unchanged retry, permissions, input limit and credential-safe errors.');
-})().catch(error=>{console.error(error);process.exitCode=1;});
+ let writes=[],dispatches=[],closed=[];
+ const github={rest:{repos:{getContent:async()=>({data:{sha:'sha',content:Buffer.from(JSON.stringify(current)).toString('base64')}}),createOrUpdateFileContents:async value=>writes.push(value)},actions:{createWorkflowDispatch:async value=>dispatches.push(value)},issues:{update:async value=>closed.push(value)}}};
+ const context={repo:{owner:'kangdasom',repo:'kw.pension.consulting'},payload:event,issue:{number:1}};
+ await run(github,context,()=>api);
+ assert.equal(writes.length,1);assert.equal(writes[0].path,'notice.json');assert.equal(writes[0].sha,'sha');
+ assert.equal(JSON.parse(Buffer.from(writes[0].content,'base64').toString('utf8')).text,next.text);
+ assert.equal(dispatches[0].workflow_id,'deploy-pages.yml');assert.equal(dispatches[0].ref,'main');assert.equal(closed[0].state,'closed');
+ writes=[];dispatches=[];closed=[];
+ const bad={...context,payload:{...event,sender:{login:'other',id:1}}};
+ await assert.rejects(run(github,bad,()=>api),/権限|권한/);assert.equal(writes.length+dispatches.length+closed.length,0);
+ assert.match(workflow,/github.actor == 'kangdasom'/);assert.match(workflow,/github.event.sender.id == 311216178/);
+ assert(!workflow.includes('${{ github.event.issue.body }}'));
+ console.log('PASS: owner identity and repository checks, unauthorized rejection before writes, UTF-8/empty/long notices, conflict/replay, exact workflow commit and explicit Pages dispatch.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

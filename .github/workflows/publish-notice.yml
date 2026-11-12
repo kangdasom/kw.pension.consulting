@@ -1,0 +1,44 @@
+name: Publish site notice
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-site-notice
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.actor == 'kangdasom' && github.event.sender.id == 311216178 && github.event.issue.user.id == 311216178 && github.event.issue.title == '사이트 공지 게시 요청'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const {parseIssue} = require('./notice-publish.js');
+            const args = {owner: context.repo.owner, repo: context.repo.repo};
+            const {data: file} = await github.rest.repos.getContent({...args, path: 'notice.json', ref: 'main'});
+            const current = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8'));
+            const notice = parseIssue(context.payload, current);
+            if (notice.revision !== current.revision) {
+              await github.rest.repos.createOrUpdateFileContents({
+                ...args, path: 'notice.json', branch: 'main', sha: file.sha,
+                message: 'Publish site notice',
+                content: Buffer.from(JSON.stringify(notice, null, 2) + '\n').toString('base64')
+              });
+            }
+            // GITHUB_TOKEN commits do not trigger push workflows. Explicit dispatch does.
+            await github.rest.actions.createWorkflowDispatch({...args, workflow_id: 'deploy-pages.yml', ref: 'main'});
+            await github.rest.issues.update({...args, issue_number: context.issue.number, state: 'closed', state_reason: 'completed'});
