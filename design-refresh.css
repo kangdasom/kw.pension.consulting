@@ -47,6 +47,7 @@ body{background:#f5f6f9;color:var(--ink)}
 #panel-sales .rate-unit{padding:0 0 5px;font-size:10px;color:#85858e}
 .table-frame th,.table-frame .sales-ranking-table th,.table-frame .sales-ranking-table th.ranking-institution{background:#eae8f2;color:var(--navy)}
 .table-frame .sales-ranking-table .ranking-institution{border-right:0}
+.table-frame .sales-ranking-table .ranking-place{width:30px;min-width:30px}
 .table-frame .sales-rate-table th{height:35px;font-size:11px;font-weight:700}
 .table-frame .sales-rate-table td{height:37px;border-bottom-color:#dfdfe9}
 .table-frame .sales-rate-table .product-name{font-weight:400;color:#34375b}
@@ -98,6 +99,17 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
  #panel-sales .table-toolbar #saveButton{padding-inline:5px;font-size:9px}
  .table-frame .sales-rate-table th{font-size:10px}
 }
+
+/* One typography scale for both sales tables, including their floating headers.
+   Explicit priority replaces the earlier per-column font overrides. */
+.table-frame{--sales-head-size:11px;--sales-body-size:10px;--sales-rate-size:13px;--sales-subrate-size:10px}
+.table-frame :is(.sales-rate-table,.sales-ranking-table) :is(th,td){text-align:center!important;letter-spacing:-.02em;line-height:1.35}
+.table-frame :is(.sales-rate-table,.sales-ranking-table) thead th{font-size:var(--sales-head-size)!important;font-weight:700!important}
+.table-frame :is(.sales-rate-table,.sales-ranking-table) tbody td{font-size:var(--sales-body-size)!important;font-weight:400!important}
+.table-frame :is(.sales-rate-table,.sales-ranking-table) tbody td.rate{font-size:var(--sales-rate-size)!important;font-weight:700!important;font-variant-numeric:tabular-nums}
+.table-frame :is(.sales-rate-table,.sales-ranking-table) .gic small{font-size:var(--sales-subrate-size)!important;font-weight:400!important}
+@media(max-width:374px){.table-frame{--sales-head-size:10px}}
+@media(min-width:960px){body.desktop-view .table-frame{--sales-head-size:13px;--sales-body-size:12px;--sales-rate-size:15px;--sales-subrate-size:12px}}
 @media(min-width:960px){
  body.desktop-view .topbar{height:80px!important;padding:0!important}
  body.desktop-view .brand-service{font-size:21px}
