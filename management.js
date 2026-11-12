@@ -73,7 +73,7 @@
   nav.innerHTML = [['sales','금리조회'],['monthly','금리·한도관리'],['basic','기관정보'],['users','사용자관리']].map(([id,label],i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
   const sales = document.createElement('section');
   sales.id = 'panel-sales'; sales.setAttribute('role','tabpanel'); sales.setAttribute('aria-labelledby','tab-sales');
-  const children = [...shell.children].filter(child => !child.classList.contains('topbar'));
+  const children = [...shell.children].filter(child => !child.classList.contains('topbar') && !child.classList.contains('work-in-progress'));
   shell.append(nav, sales); children.forEach(child => sales.append(child));
   const admin = document.createElement('section');
   admin.id='panel-monthly'; admin.className='management-panel'; admin.hidden=true;
