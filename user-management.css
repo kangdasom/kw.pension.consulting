@@ -1,0 +1,31 @@
+/* Four compact tabs, including the local account-planning panel. */
+.main-tabs button{min-width:0;padding-inline:3px}
+#panel-users{min-width:0}
+#panel-users .user-tools{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+#panel-users input,#panel-users select{min-width:0;max-width:100%;height:34px;padding:5px 8px;background:#fff;border:1px solid #dcdce6}
+#panel-users button{min-height:32px;cursor:pointer}
+#panel-users button:disabled{cursor:default;opacity:.5}
+#panel-users .user-tools input{flex:1 1 180px}
+#panel-users .user-form{padding:12px;background:#f5f5f8;border-block:1px solid #dddde7}
+#panel-users .user-form[hidden]{display:none}
+#panel-users .user-form h2{margin:0 0 10px;font-size:14px;color:#20234f}
+#panel-users .user-fields{display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px}
+#panel-users .user-fields label{display:flex;flex-direction:column;gap:5px;font-size:12px;min-width:0}
+#panel-users .user-form-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
+#panel-users .user-table-meta{display:flex;justify-content:space-between;gap:8px;margin:14px 0 7px;font-size:11px;color:#777984}
+#panel-users .user-table{min-width:850px;width:100%;table-layout:fixed}
+#panel-users .user-table th:nth-child(1){width:90px}
+#panel-users .user-table th:nth-child(2){width:220px}
+#panel-users .user-table th:nth-child(3){width:95px}
+#panel-users .user-table th:nth-child(4){width:105px}
+#panel-users .user-table th:nth-child(5){width:90px}
+#panel-users .user-table td{overflow-wrap:anywhere;font-weight:400}
+#panel-users .user-actions button{font-size:11px;padding:3px 6px;margin:2px}
+#panel-users :focus-visible{outline:2px solid #20234f;outline-offset:2px}
+@media(max-width:600px){
+  .main-tabs button{font-size:11px!important;letter-spacing:-.06em}
+  #panel-users .user-fields{grid-template-columns:1fr}
+  #panel-users .user-tools select{flex:1 1 100px}
+  #panel-users .user-tools #userAdd{flex:1 1 100%}
+  #panel-users .user-table-meta{flex-wrap:wrap}
+}

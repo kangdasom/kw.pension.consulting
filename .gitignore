@@ -28,6 +28,7 @@
 !/scripts/check-rate-upload.cjs
 !/scripts/check-notice-publish.cjs
 !/scripts/check-notice-ui.cjs
+!/scripts/check-user-management-ui.cjs
 !/scripts/fixtures/
 /scripts/fixtures/*
 !/scripts/fixtures/rates-july.js

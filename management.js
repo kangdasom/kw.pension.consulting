@@ -70,7 +70,7 @@
   const shell = document.querySelector('.app-shell');
   const nav = document.createElement('div');
   nav.className = 'main-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','금리표 및 상품 관리');
-  nav.innerHTML = [['sales','금리조회'],['monthly','금리·한도관리'],['basic','기관정보']].map(([id,label],i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
+  nav.innerHTML = [['sales','금리조회'],['monthly','금리·한도관리'],['basic','기관정보'],['users','사용자관리']].map(([id,label],i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
   const sales = document.createElement('section');
   sales.id = 'panel-sales'; sales.setAttribute('role','tabpanel'); sales.setAttribute('aria-labelledby','tab-sales');
   const children = [...shell.children].filter(child => !child.classList.contains('topbar'));
@@ -81,7 +81,10 @@
   const basic = document.createElement('section');
   basic.id='panel-basic'; basic.className='management-panel'; basic.hidden=true;
   basic.setAttribute('role','tabpanel'); basic.setAttribute('aria-labelledby','tab-basic');
-  shell.append(admin,basic);
+  const users = document.createElement('section');
+  users.id='panel-users'; users.className='management-panel'; users.hidden=true;
+  users.setAttribute('role','tabpanel'); users.setAttribute('aria-labelledby','tab-users');
+  shell.append(admin,basic,users);
   const options = (values, value) => values.map(v => `<option value="${escapeHtml(v)}" ${v===(value || '')?'selected':''}>${escapeHtml(v || '미설정')}</option>`).join('');
   const select = (values,value,attrs) => `<select ${attrs}>${options(values,value)}</select>`;
   const securityNote = '<p class="management-notice">금리·한도·기관 관리정보는 이 브라우저에만 저장됩니다. 공지는 kangdasom GitHub 계정으로 게시 요청을 제출한 뒤 전체 방문자에게 배포됩니다.</p>';
@@ -119,7 +122,7 @@
   // The browser file-upload UI replaces this legacy disclosure after initialization.
   $('manageImport').onclick=()=>{ $('managementImport').hidden=!$('managementImport').hidden; if(importDisclosure?.tagName==='DETAILS') importDisclosure.open=true; };
   function switchTab(id) {
-    ['sales','monthly','basic'].forEach(name=>{
+    ['sales','monthly','basic','users'].forEach(name=>{
       $(`panel-${name}`).hidden=name!==id;
       $(`tab-${name}`).setAttribute('aria-selected',String(name===id));
       $(`tab-${name}`).tabIndex=name===id?0:-1;
