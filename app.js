@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   tip.id='rateStatusTooltip';tip.className='rate-status-tooltip';tip.hidden=true;
   tip.setAttribute('role','tooltip');document.body.append(tip);
   let active=null,source=null;
-  const descriptions={Y:'한도 내 사용가능',N:'N · 이번 달 제안 불가','확인':'업체명/금액 사전확인필요'};
+  const descriptions={Y:'Y (한도 내 사용가능)',N:'N · 이번 달 제안 불가','확인':'업체명/금액 사전확인필요'};
   function hide(){
     active?.removeAttribute('aria-describedby');
     active=null;source=null;tip.hidden=true;
