@@ -14,11 +14,12 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   await page.evaluate(()=>{els.ratingFilter.value='AA+';els.sortFilter.value='rating';render();});
   const full=await page.evaluate(()=>JSON.stringify(RateExport.snapshot('current',new Date('2026-11-13T00:00:00Z'))));
   await page.locator('#sales-view-tab-ranking').click();
+  assert.equal(await page.locator('[data-ranking-group="0"]').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('[data-ranking-index][aria-pressed="true"]').count(),0);assert.equal(await page.locator('.ranking-section').count(),0);assert.equal(await page.locator('#rankingSelectionCount').innerText(),'0 / 3');
   const group=g=>page.locator(`[data-ranking-group="${g}"]`),term=i=>page.locator(`[data-ranking-index="${i}"]`);
   const sections=()=>page.evaluate(()=>SalesRanking.current().sections);
   // Independently check all types/terms, full-set mean, fixed ten-row cap and ties.
   for(let g=0;g<4;g++)for(let i=0;i<4;i++){
-   await page.locator('#rankingReset').click();await term(0).click();await group(g).click();await term(i).click();await page.locator('#rankingViewAll').click();
+   await page.locator('#rankingReset').click();await group(g).click();await term(i).click();await page.locator('#rankingViewAll').click();
    const expected=await page.evaluate(({g,i})=>{
     const months=[12,18,36,60][i],years=months/12;
     return rates.filter(r=>(r.category==='파생결합사채'?0:r.category==='보험'?1:r.type==='은행예금'?2:3)===g&&r.terms[months]).map(r=>{const rate=r.terms[months].rate;return g===1?Math.floor((((1+rate/100)**years-1)/years*100+1e-10)*100)/100:rate;}).sort((a,b)=>b-a);
@@ -29,7 +30,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
    const actual=await page.locator('.ranking-section tbody tr').evaluateAll(rows=>rows.map(r=>({rank:Number(r.cells[0].textContent),rate:r.cells[4].innerText,spread:r.cells[5].textContent})));
    actual.forEach((r,n)=>{assert.equal(g===1?Number(r.rate.match(/\(([^)]+)\)/)[1]):Number(r.rate),shown[n]);const bp=Number(((shown[n]-mean)*100).toFixed(2));assert.equal(r.spread,(bp>0?'+':bp<0?'−':'')+Math.abs(bp)+'bp');assert.equal(r.rank,n&&shown[n]===shown[n-1]?actual[n-1].rank:n+1);});
   }
-  await page.locator('#rankingReset').click();await group(1).click();await term(2).click();await term(3).click();
+  await page.locator('#rankingReset').click();await term(0).click();await group(1).click();await term(2).click();await term(3).click();
   assert.deepEqual((await sections()).map(s=>[s.group,s.index]),[[0,0],[1,2],[1,3]]);
   const selected=JSON.stringify(await sections());await term(0).click();
   assert.equal(await page.locator('#rankingToast').innerText(),'최대 3개까지 선택할 수 있습니다.');assert.equal(await term(0).getAttribute('aria-pressed'),'false');assert.equal(JSON.stringify(await sections()),selected);
@@ -40,7 +41,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   await group(0).click();assert.equal(await term(0).getAttribute('aria-pressed'),'true');await group(1).click();assert.equal(await term(2).getAttribute('aria-pressed'),'true');
   await term(2).click();assert.equal((await sections()).length,2);await term(2).click();
   await page.locator('[data-ranking-remove="2"]').click();assert.equal((await sections()).length,2);await term(2).click();
-  await page.locator('#rankingReset').click();await group(1).click();await term(2).click();await term(3).click();
+  await page.locator('#rankingReset').click();await term(0).click();await group(1).click();await term(2).click();await term(3).click();
   // Common filters apply independently to each maturity.
   await page.locator('#rankingRating').selectOption('AAA');assert.ok((await sections()).every(s=>s.rows.every(r=>r.grade==='AAA')));await page.locator('#rankingRating').selectOption('all');
   for(const state of ['Y','N','확인']){await page.locator('#rankingProposal').selectOption(state);assert.ok(await page.evaluate(state=>SalesRanking.current().sections.every(s=>s.rows.every(r=>termProposalState(r,maturities[s.index])===state)),state));}await page.locator('#rankingProposal').selectOption('all');
@@ -76,7 +77,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   await page.evaluate(()=>scrollTo(0,0));await page.locator('#sales-view-tab-full').click();assert.equal(await page.evaluate(()=>JSON.stringify(RateExport.snapshot('current',new Date('2026-11-13T00:00:00Z')))),full);
   await page.locator('#sales-view-tab-ranking').click();assert.equal((await sections()).length,3);await page.locator('#tab-monthly').click();assert.equal(await page.locator('.floating-rate-head:visible').count(),0);await page.locator('#tab-sales').click();
   while(await page.locator('[data-ranking-remove]').count())await page.locator('[data-ranking-remove]').first().click();assert.equal((await sections()).length,0);assert.ok(await page.locator('.ranking-empty').isVisible());assert.ok(await page.evaluate(()=>{try{RateExport.snapshot('current');return false;}catch{return true;}}));
-  await page.locator('#rankingReset').click();assert.deepEqual((await sections()).map(s=>[s.group,s.index]),[[0,0]]);assert.equal(await page.locator('#rankingLineup').inputValue(),'Y');
+  await page.locator('#rankingReset').click();assert.deepEqual((await sections()).map(s=>[s.group,s.index]),[]);assert.equal(await group(0).getAttribute('aria-pressed'),'true');assert.equal(await term(0).getAttribute('aria-pressed'),'false');assert.equal(await page.locator('#rankingLineup').inputValue(),'Y');
   assert.equal(await page.evaluate(()=>JSON.stringify(window.RATE_IMPORT)),before.data);
   const finalStorage=await page.evaluate(()=>{const s={...localStorage};delete s['db-rate-view-mode'];return JSON.stringify(s);});assert.equal(finalStorage,before.storage);assert.deepEqual(errors,[]);
   console.log('PASS: maximum-three toggles/removal/state retention, light timed toast/retrigger, all 16 independent rankings/full means/top10/ties, shared filters/tooltips, comparison PNG/download equality, current/all export isolation, zero selection, mobile/tablet/PC layouts, all pinned controls, unchanged source/storage.');
