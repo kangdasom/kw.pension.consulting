@@ -41,7 +41,7 @@
 .ranking-section h2{margin:0 0 4px;color:#20234f;font-size:14px;font-weight:700}
 .ranking-section>p{margin:0 0 8px;font-size:10px;line-height:1.6;color:#777984}
 .ranking-empty{padding:24px 8px;text-align:center;font-size:12px;color:#777984}
-.ranking-toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;padding:11px 17px;border:1px solid #dcdce6;border-radius:9px;background:#f0eff5;color:#303455;font:400 12px/1.5 "Pretendard",Arial,sans-serif;box-shadow:0 2px 8px #20234f10;opacity:0;visibility:hidden;pointer-events:none;text-align:center}
+.ranking-toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;padding:7px 17px;border:1px solid #e82e87;border-radius:9px;background:#e82e87;color:#fff;font:400 12px/1.5 "Pretendard",Arial,sans-serif;box-shadow:0 4px 14px #e82e8733;opacity:0;visibility:hidden;pointer-events:none;text-align:center}
 .ranking-toast.visible{opacity:1;visibility:visible}
 @media(min-width:960px){
  body.desktop-view .ranking-grid{grid-template-columns:repeat(var(--ranking-columns),minmax(0,1fr));gap:16px}

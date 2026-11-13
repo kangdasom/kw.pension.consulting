@@ -35,7 +35,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   const selected=JSON.stringify(await sections());await term(0).click();
   assert.equal(await page.locator('#rankingToast').innerText(),'최대 3개까지 선택할 수 있습니다.');assert.equal(await term(0).getAttribute('aria-pressed'),'false');assert.equal(JSON.stringify(await sections()),selected);
   assert.equal(await page.locator('#rankingToast button').count(),0);
-  const toastStyle=await page.locator('#rankingToast').evaluate(e=>({width:e.getBoundingClientRect().width,bg:getComputedStyle(e).backgroundColor}));assert.ok(toastStyle.width<350);assert.equal(toastStyle.bg,'rgb(240, 239, 245)');
+  const toastStyle=await page.locator('#rankingToast').evaluate(e=>({width:e.getBoundingClientRect().width,bg:getComputedStyle(e).backgroundColor}));assert.ok(toastStyle.width<350);assert.equal(toastStyle.bg,'rgb(232, 46, 135)');
   await page.screenshot({path:path.join(out,'toast-390.png')});await page.waitForTimeout(1800);await term(0).click();await page.waitForTimeout(1600);assert.ok(await page.locator('#rankingToast').evaluate(e=>e.classList.contains('visible')));await page.waitForTimeout(1600);assert.ok(!await page.locator('#rankingToast').evaluate(e=>e.classList.contains('visible')));
   // Product switching retains the chosen terms and all comparison tables.
   await group(0).click();assert.equal(await term(0).getAttribute('aria-pressed'),'true');await group(1).click();assert.equal(await term(2).getAttribute('aria-pressed'),'true');
@@ -80,6 +80,6 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   await page.locator('#rankingReset').click();assert.deepEqual((await sections()).map(s=>[s.group,s.index]),[]);assert.equal(await group(0).getAttribute('aria-pressed'),'true');assert.equal(await term(0).getAttribute('aria-pressed'),'false');assert.equal(await page.locator('#rankingLineup').inputValue(),'Y');
   assert.equal(await page.evaluate(()=>JSON.stringify(window.RATE_IMPORT)),before.data);
   const finalStorage=await page.evaluate(()=>{const s={...localStorage};delete s['db-rate-view-mode'];return JSON.stringify(s);});assert.equal(finalStorage,before.storage);assert.deepEqual(errors,[]);
-  console.log('PASS: maximum-three toggles/removal/state retention, light timed toast/retrigger, all 16 independent rankings/full means/top10/ties, shared filters/tooltips, comparison PNG/download equality, current/all export isolation, zero selection, mobile/tablet/PC layouts, all pinned controls, unchanged source/storage.');
+  console.log('PASS: maximum-three toggles/removal/state retention, pink compact timed toast/retrigger, all 16 independent rankings/full means/top10/ties, shared filters/tooltips, comparison PNG/download equality, current/all export isolation, zero selection, mobile/tablet/PC layouts, all pinned controls, unchanged source/storage.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
