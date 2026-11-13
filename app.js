@@ -80,7 +80,7 @@ updateFilterSummary();
 document.addEventListener('DOMContentLoaded',()=>{
 /* A single viewport tooltip; no internal amount, reason, or notes are exposed. */
 (() => {
-  const body=document.getElementById('rateTableBody');
+  const body=document.getElementById('panel-sales');
   const tip=document.createElement('div');
   tip.id='rateStatusTooltip';tip.className='rate-status-tooltip';tip.hidden=true;
   tip.setAttribute('role','tooltip');document.body.append(tip);
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   window.visualViewport?.addEventListener('resize',hide);
   window.visualViewport?.addEventListener('scroll',hide);
   const observer=new MutationObserver(hide);
-  observer.observe(body,{childList:true});
+  observer.observe(body,{childList:true,subtree:true});
   observer.observe(document.getElementById('panel-sales'),{attributes:true,attributeFilter:['hidden']});
   document.querySelectorAll('.modal-backdrop').forEach(modal=>observer.observe(modal,{attributes:true,attributeFilter:['hidden']}));
   window.RateStatus={hide};

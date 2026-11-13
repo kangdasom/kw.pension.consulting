@@ -29,7 +29,7 @@
       sort==='rating' ? '신용등급 높은 순' : `${names[Number(document.getElementById('maturitySort').value)]} 금리 높은 순`;
     const condition=ranking?ranking.condition:all ? '전체 대상 상품 · 필터 미적용 · 1·1.5·3·5년' :
       `만기 ${indices.map(i=>names[i]).join('·')} / 등급 ${els.ratingFilter.value==='all'?'전체':els.ratingFilter.value+' 이상'} / 상품군 ${checked().join('·')} / 사업자 ${label(els.pensionFilter.value)} / 라인업 ${label(els.lineupFilter.value)} / 제안가능 ${label(els.proposalFilter.value)}`;
-    const rows=source.map(row=>{
+    const publicRows=(source,indices)=>source.map(row=>{
       const states=indices.filter(i=>row.terms[maturities[i]]).map(i=>row.proposals[maturities[i]]);
       const status=!states.length || states.some(s=>s!=='Y'&&s!=='N')?'확인':states.every(s=>s==='Y')?'Y':states.every(s=>s==='N')?'N':'일부';
       return {id:row.id,group:groupRank(row),status,product:row.type,institution:row.institution,grade:row.grade||'—',
@@ -38,9 +38,11 @@
           return value===undefined?'—':row.category==='보험'?`${value.toFixed(2)} (${effectiveRate(row,i).toFixed(2)})`:value.toFixed(2);
         })};
     });
+    const rows=publicRows(source,indices);
+    const sections=ranking?.sections?.map(section=>({label:section.label,indices:section.indices.slice(),rows:publicRows(section.rows,section.indices)}));
     const created=now.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
     return {scope:all?'all':'current',title:`${monthLabel} 원리금보장상품 금리`,period:`${importData.start} ~ ${importData.end}`,
-      condition,sortLabel,created,memo:exportMemo,indices:indices.slice(),rows,
+      condition,sortLabel,created,memo:exportMemo,indices:indices.slice(),rows,...(sections?{sections}:{}),
       filename:`${importData.month.replace('-','년')}월_금리표_${all?'전체':'현재조회'}.png`};
   }
   function wrap(ctx,text,width) {
@@ -53,6 +55,7 @@
     return lines;
   }
   function draw(canvas,data) {
+    if(data.sections?.length>1)return drawComparison(canvas,data);
     const ctx=canvas.getContext('2d');
     if(!ctx)throw Error('이 브라우저에서는 이미지를 만들 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.');
     const pad=28,base=[126,182,64];
@@ -133,6 +136,51 @@
     });
     ctx.textAlign='left';ctx.font=font(13);ctx.fillStyle='#696979';
     foot.forEach((text,i)=>ctx.fillText(text,pad,noteTop+i*21));
+    return {width,height,pixelWidth:canvas.width,pixelHeight:canvas.height};
+  }
+  function drawComparison(canvas,data){
+    const ctx=canvas.getContext('2d');
+    if(!ctx)throw Error('이 브라우저에서는 이미지를 만들 수 없습니다.');
+    const pad=28,gap=22,widths=[72,158,52,202],tableWidth=484;
+    const width=pad*2+data.sections.length*tableWidth+(data.sections.length-1)*gap;
+    const font=(size,bold=false)=>`${bold?'600':'400'} ${size}px "Pretendard", Arial, "Malgun Gothic", sans-serif`;
+    ctx.font=font(14);
+    const meta=[`· 적용기간 : ${data.period.replaceAll('-','.')}`,`· 정렬기준 : ${data.sortLabel}`].flatMap(t=>wrap(ctx,t,width-pad*2));
+    const memo=memoText(data.memo);ctx.font=font(15);
+    const memoLines=memo?wrap(ctx,memo,width-pad*2-36):[],memoTop=88+meta.length*22+4,memoHeight=memo?48+memoLines.length*22:0;
+    const captionTop=88+meta.length*22+24+(memo?memoHeight+30:0),tableTop=captionTop+38,headHeight=38;
+    const sections=data.sections.map(section=>({...section,body:section.rows.map(row=>{
+      const values=[row.product,row.institution,row.grade,...row.cells];
+      const lines=values.map((v,i)=>{ctx.font=font(i===3?17.25:15);return wrap(ctx,v,widths[i]-12);});
+      return {lines,height:Math.max(42,...lines.map(part=>part.length*21+14))};
+    })}));
+    const bottom=tableTop+headHeight+Math.max(...sections.map(s=>s.body.length?s.body.reduce((sum,r)=>sum+r.height,0):42));
+    const noteTop=bottom+26,height=noteTop+21+pad;
+    const scale=Math.min(1.5,Math.sqrt(12000000/(width*height)),8192/height,4096/width);
+    if(scale<1)throw Error('한 장에 저장하기에는 상품이 너무 많습니다. 조회 범위를 줄여 다시 시도해 주세요.');
+    canvas.width=Math.ceil(width*scale);canvas.height=Math.ceil(height*scale);ctx.scale(scale,scale);
+    ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,width,height);ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#202052';ctx.font=font(25,true);ctx.fillText(data.title,pad,38);
+    if(brand)ctx.drawImage(brand,width-pad-175,14,175,175*brand.naturalHeight/brand.naturalWidth);
+    ctx.fillStyle='#ED2F7B';ctx.fillRect(pad,63,width-pad*2,3);ctx.fillStyle='#696979';ctx.font=font(14);meta.forEach((t,i)=>ctx.fillText(t,pad,88+i*22));
+    if(memo){
+      ctx.fillStyle='#F6F6F8';ctx.fillRect(pad,memoTop,width-pad*2,memoHeight);ctx.strokeStyle='#D6D5DF';ctx.lineWidth=1;ctx.strokeRect(pad+.5,memoTop+.5,width-pad*2-1,memoHeight-1);
+      ctx.fillStyle='#202052';ctx.font=font(15,true);ctx.fillText('메모',pad+18,memoTop+21);ctx.fillStyle='#252541';ctx.font=font(15);memoLines.forEach((t,i)=>ctx.fillText(t,pad+18,memoTop+46+i*22));
+    }
+    sections.forEach((section,n)=>{
+      const left=pad+n*(tableWidth+gap);ctx.textAlign='left';ctx.font=font(18,true);ctx.fillStyle='#202052';ctx.fillText(section.label,left,captionTop);
+      ctx.textAlign='right';ctx.font=font(11);ctx.fillStyle='#696979';ctx.fillText('(연, %)',left+tableWidth,tableTop-12);
+      ctx.fillStyle='#202052';ctx.fillRect(left,tableTop,tableWidth,headHeight);ctx.fillStyle='#FFFFFF';ctx.font=font(14,true);ctx.textAlign='center';let x=left;
+      ['상품','제공기관','등급',names[section.indices[0]]].forEach((t,i)=>{ctx.fillText(t,x+widths[i]/2,tableTop+headHeight/2);x+=widths[i];});
+      let y=tableTop+headHeight;
+      section.body.forEach(({lines,height:rh},i)=>{
+        ctx.fillStyle=i%2?'#F7F7FA':'#FFFFFF';ctx.fillRect(left,y,tableWidth,rh);x=left;
+        lines.forEach((part,j)=>{ctx.font=font(j===3?17.25:15);ctx.fillStyle='#252541';part.forEach((t,k)=>ctx.fillText(t,x+widths[j]/2,y+(rh-(part.length-1)*21)/2+k*21));x+=widths[j];});
+        ctx.fillStyle='#E5E4EC';ctx.fillRect(left,y+rh-1,tableWidth,1);y+=rh;
+      });
+      if(!section.body.length){ctx.fillStyle='#696979';ctx.font=font(14);ctx.fillText('조건에 맞는 상품이 없습니다.',left+tableWidth/2,y+21);}
+    });
+    ctx.textAlign='left';ctx.fillStyle='#696979';ctx.font=font(13);
+    ['* GIC 금리는 공시금리 (단리연환산금리) 입니다.','* 상품 매수 전 매수가능여부를 확인해주세요.'].forEach((t,i)=>ctx.fillText(t,pad,noteTop+i*21));
     return {width,height,pixelWidth:canvas.width,pixelHeight:canvas.height};
   }
   window.RateExport={snapshot,draw,loadBrand,memoText};
