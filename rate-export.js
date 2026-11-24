@@ -10,7 +10,7 @@
     });
     return brandPromise;
   }
-  const names=['1년','1.5년','3년','5년'];
+  const names=maturities.map(months=>months<12?months+'개월':months/12+'년');
   const label=value=>value==='all'?'전체':value;
   function memoText(value) {
     const text=String(value??'').replace(/\r\n?/g,'\n').trim();
@@ -21,13 +21,13 @@
     const all=scope==='all';
     const exportMemo=all?'':memoText(memo);
     const ranking=!all&&window.SalesRanking?.active()?window.SalesRanking.current():null;
-    const indices=all?[0,1,2,3]:ranking?ranking.indices:selectedMaturities();
+    const indices=all?maturities.map((_,i)=>i):ranking?ranking.indices:selectedMaturities();
     const source=all ? rates.filter(row=>maturities.some(term=>row.terms[term])&&(!window.RateScheme?.customer||row.lineup==='Y')).slice().sort(defaultOrder) : ranking?ranking.rows:filteredRows();
     if(!indices.length || !source.length) throw Error('저장할 상품이 없습니다. 조회 조건과 만기를 확인해 주세요.');
     const sort=els.sortFilter.value;
     const sortLabel=ranking?ranking.sortLabel:all || sort==='default' ? '상품군별 기본순' :
       sort==='rating' ? '신용등급 높은 순' : `${names[Number(document.getElementById('maturitySort').value)]} 금리 높은 순`;
-    const condition=ranking?ranking.condition:all ? '전체 대상 상품 · 필터 미적용 · 1·1.5·3·5년' :
+    const condition=ranking?ranking.condition:all ? '전체 대상 상품 · 필터 미적용 · '+names.join('·') :
       `만기 ${indices.map(i=>names[i]).join('·')} / 등급 ${els.ratingFilter.value==='all'?'전체':els.ratingFilter.value+' 이상'} / 상품군 ${checked().join('·')} / 사업자 ${label(els.pensionFilter.value)} / 라인업 ${label(els.lineupFilter.value)} / 제안가능 ${label(els.proposalFilter.value)}`;
     const publicRows=(source,indices)=>source.map(row=>{
       const states=indices.filter(i=>row.terms[maturities[i]]).map(i=>row.proposals[maturities[i]]);

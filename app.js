@@ -3,7 +3,7 @@ document.getElementById('brandLogoVisible').src = "data:image/png;base64,iVBORw0
 document.querySelectorAll('select').forEach(el => el.addEventListener('change', render));
 const periodTrigger = document.getElementById('periodTrigger');
 const periodMenu = document.getElementById('periodMenu');
-const updatePeriodLabel = () => { const selected = [...periodMenu.querySelectorAll('input:checked')]; periodTrigger.innerHTML = selected.length === 4 ? '전체 만기 <span>⌄</span>' : selected.length ? `${selected.length}개 만기 <span>⌄</span>` : '만기 선택 <span>⌄</span>'; };
+const updatePeriodLabel = () => { const selected = [...periodMenu.querySelectorAll('input:checked')]; periodTrigger.innerHTML = selected.length === periodMenu.querySelectorAll('input').length ? '전체 만기 <span>⌄</span>' : selected.length ? `${selected.length}개 만기 <span>⌄</span>` : '만기 선택 <span>⌄</span>'; };
 periodTrigger.addEventListener('click', () => { periodMenu.hidden = !periodMenu.hidden; periodTrigger.setAttribute('aria-expanded', String(!periodMenu.hidden)); });
 periodMenu.querySelectorAll('input').forEach(input => input.addEventListener('change', () => { updatePeriodLabel(); render(); }));
 const categoryTrigger = document.getElementById('categoryTrigger');
@@ -34,7 +34,7 @@ function updateCategoryLabel(){
 categoryMenu.querySelectorAll('input').forEach(input => input.addEventListener('change', () => { updateCategoryLabel(); render(); }));
 updateCategoryLabel();
 document.addEventListener('click', event => { if(!document.getElementById('categoryMultiSelect').contains(event.target)){ categoryMenu.hidden = true; categoryTrigger.setAttribute('aria-expanded','false'); } if(!document.getElementById('periodMultiSelect').contains(event.target)){ periodMenu.hidden = true; periodTrigger.setAttribute('aria-expanded','false'); } });
-els.resetButton.addEventListener('click', () => { els.periodFilter.value='all'; els.ratingFilter.value='all'; els.pensionFilter.value='all'; els.lineupFilter.value='Y'; els.proposalFilter.value='all'; els.sortFilter.value='rate'; document.getElementById('maturitySort').value='0'; categoryMenu.querySelectorAll('input').forEach(input => input.checked = window.RateScheme?.customer || ["파생결합사채", "보험"].includes(input.value)); periodMenu.querySelectorAll('input').forEach(input => input.checked = true); updateCategoryLabel(); updatePeriodLabel(); render(); });
+els.resetButton.addEventListener('click', () => { els.periodFilter.value='all'; els.ratingFilter.value='all'; els.pensionFilter.value='all'; els.lineupFilter.value='Y'; els.proposalFilter.value='all'; els.sortFilter.value='rate'; document.getElementById('maturitySort').value=String(maturities.indexOf(12)); categoryMenu.querySelectorAll('input').forEach(input => input.checked = window.RateScheme?.customer || ["파생결합사채", "보험"].includes(input.value)); periodMenu.querySelectorAll('input').forEach(input => input.checked = true); updateCategoryLabel(); updatePeriodLabel(); render(); });
 document.getElementById('maturitySort').addEventListener('change', render);
 els.sortFilter.addEventListener('change', () => { document.getElementById('maturitySortWrap').hidden = els.sortFilter.value !== 'rate'; render(); });
 const moreFilterButton = document.getElementById('moreFilterButton');

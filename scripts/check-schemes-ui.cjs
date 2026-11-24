@@ -43,7 +43,16 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
      assert.ok(!result.all.title.includes('DB'));assert.ok(result.all.filename.includes(plan==='irp'?'개인IRP':plan.toUpperCase()));
      assert.equal(result.sources.length,90);
     }else assert.equal(result.sources.length,98);
-    const fifth=await page.locator('.sales-rate-table th.rate-head').last().boundingBox();assert.ok(fifth.x+fifth.width<=width+1,'5y column beyond initial viewport');
+    const expectedTerms=plan==='db'?['1년','1.5년','3년','5년']:['3개월','6개월','1년','2년','3년','5년'];
+    assert.deepEqual(await page.locator('.sales-rate-table th.rate-head').allTextContents(),expectedTerms);
+    assert.deepEqual(await page.locator('#periodMenu label').allTextContents().then(a=>a.map(s=>s.trim())),expectedTerms);
+    assert.equal(await page.locator('#maturitySort').inputValue(),plan==='db'?'0':'2');
+    assert.equal(result.all.indices.length,expectedTerms.length);
+    if(plan==='db'){const fifth=await page.locator('.sales-rate-table th.rate-head').last().boundingBox();assert.ok(fifth.x+fifth.width<=width+1,'5y column beyond initial viewport');}
+    else{
+     const scroll=page.locator('#sales-view-full .table-scroll');await scroll.evaluate(el=>el.scrollLeft=el.scrollWidth);
+     const fifth=await page.locator('.sales-rate-table th.rate-head').last().boundingBox();assert.ok(fifth.x+fifth.width<=width+1,'5y inaccessible after horizontal scroll');await scroll.evaluate(el=>el.scrollLeft=0);
+    }
     if(width===390){
      summary.push({plan,rows:result.rows.length});
      await page.screenshot({path:path.join(out,plan+'-390.png')});
@@ -54,7 +63,40 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
      fs.writeFileSync(path.join(out,plan+'-current.png'),Buffer.from(bytes));
      await page.locator('#exportClose').click();
      if(plan!=='db'){
-      await page.locator('#sales-view-tab-ranking').click();await page.locator('[data-ranking-index="0"]').click();
+      // Real source rates map to the six displayed terms, with fractional-year GIC conversion.
+      const auditTerms=await page.evaluate(()=>{
+       const terms=[3,6,12,24,36,60],snapshot=RateExport.snapshot('current');
+       const issues=[];
+       for(const exported of snapshot.rows){const row=rates.find(r=>r.id===exported.id);terms.forEach((term,i)=>{
+        const value=row.terms[term]?.rate,years=term/12;
+        const converted=value===undefined?null:Math.floor((((1+value/100)**years-1)/years*100+1e-10)*100)/100;
+        const expected=value===undefined?'—':row.category==='보험'?value.toFixed(2)+' ('+(years===1?value:converted).toFixed(2)+')':value.toFixed(2);
+        if(exported.cells[i]!==expected)issues.push([row.id,term,exported.cells[i],expected]);
+       });}
+       return issues;
+      });assert.deepEqual(auditTerms,[]);
+      await page.locator('#periodTrigger').click();
+      for(const index of [0,1,2,4,5])await page.locator('#periodMenu input').nth(index).uncheck();
+      await page.locator('#periodTrigger').click();
+      const onlyTwo=await page.evaluate(()=>({indices:RateExport.snapshot('current').indices,ids:filteredRows().map(r=>r.id),expected:rates.filter(r=>r.lineup==='Y'&&r.terms[24]).map(r=>r.id)}));
+      assert.deepEqual(onlyTwo.indices,[3]);assert.deepEqual([...onlyTwo.ids].sort(),[...onlyTwo.expected].sort());
+      await page.locator('#resetButton').click();assert.equal(await page.locator('#maturitySort').inputValue(),'2');assert.equal(await page.locator('#periodMenu input:checked').count(),6);assert.ok((await page.locator('#periodTrigger').innerText()).includes('전체 만기'));
+      await page.locator('#sales-view-tab-ranking').click();
+      assert.deepEqual(await page.locator('[data-ranking-index]').allTextContents(),expectedTerms);
+      for(let group=0;group<4;group++){
+       await page.locator('[data-ranking-group="'+group+'"]').click();
+       for(let index=0;index<6;index++){
+        await page.locator('[data-ranking-index="'+index+'"]').click();
+        const data=await page.evaluate(({group,index})=>{
+         const term=[3,6,12,24,36,60][index],calc=r=>{const a=r.terms[term].rate,n=term/12;return r.category==='보험'&&n!==1?Math.floor((((1+a/100)**n-1)/n*100+1e-10)*100)/100:a;};
+         const expected=rates.filter(r=>groupRank(r)===group&&r.lineup==='Y'&&r.terms[term]).map(calc).sort((a,b)=>b-a).slice(0,10);
+         const section=SalesRanking.current().sections[0];return {expected,actual:section.rows.map(calc),label:section.label,exported:section.rows.length?RateExport.snapshot('current').indices:[]};
+        },{group,index});assert.deepEqual(data.actual,data.expected);assert.ok(data.label.endsWith(expectedTerms[index]));
+        if(data.expected.length)assert.deepEqual(data.exported,[index]);
+        await page.locator('[data-ranking-index="'+index+'"]').click();
+       }
+      }
+      await page.locator('[data-ranking-group="0"]').click();await page.locator('[data-ranking-index="2"]').click();
       assert.equal(await page.locator('.ranking-grid .rate-status-trigger').count(),0);assert.ok(!await page.locator('#rankingProposal').isVisible());
       assert.ok(await page.locator('.ranking-grid tbody tr').count());await page.locator('#sales-view-tab-full').click();
       await page.locator('#infoButton').click();const guide=await page.locator('#infoModal .guide-list').innerText();assert.ok(!guide.includes('제안가능'),JSON.stringify({guide,errors}));await page.locator('[data-close="infoModal"]').click();

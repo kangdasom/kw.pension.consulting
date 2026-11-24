@@ -1,5 +1,5 @@
 /* Monthly source rates and internal management information have separate keys. */
-const maturities = [12,18,36,60];
+const maturities = window.RateScheme?.customer ? [3,6,12,24,36,60] : [12,18,36,60];
 const ratingOrder = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-','BB+','BB','BB-','B+','B','B-','CCC','CC','C','D'];
 let importData = window.RATE_IMPORT;
 let rates = importData.products;
@@ -46,8 +46,8 @@ function productRank(row){
 }
 // Approved workbook order: group, 1y rate, grade, 3y rate, 5y rate, name, variant.
 function defaultOrder(a,b){
-  return groupRank(a)-groupRank(b) || compareRate(a,b,0) || gradeRank(a)-gradeRank(b) ||
-    compareRate(a,b,2) || compareRate(a,b,3) || a.institution.localeCompare(b.institution,'ko') ||
+  return groupRank(a)-groupRank(b) || compareRate(a,b,maturities.indexOf(12)) || gradeRank(a)-gradeRank(b) ||
+    compareRate(a,b,maturities.indexOf(36)) || compareRate(a,b,maturities.indexOf(60)) || a.institution.localeCompare(b.institution,'ko') ||
     productRank(a)-productRank(b) || a.id.localeCompare(b.id,'ko');
 }
 function termProposalState(row,months){
@@ -98,7 +98,7 @@ function render(){
 // Start with lineup Y and all proposal statuses; explicit full view clears both.
 els.lineupFilter.value='Y'; els.proposalFilter.value='all';
 els.sortFilter.value='rate';
-document.getElementById('maturitySort').value='0';
+document.getElementById('maturitySort').value=String(maturities.indexOf(12));
 const heading = document.querySelector('.page-heading');
 function ratePageTitle(){return `${monthLabel} 원리금보장상품 공시금리 (${window.RateScheme?.label||'DB'})`;}
 heading.querySelector('h1').textContent=ratePageTitle();

@@ -2,7 +2,7 @@
 (() => {
  'use strict';
  const $=id=>document.getElementById(id),panel=$('panel-sales');
- const labels=['ELB/DLB','GIC','은행예금','저축은행예금'],terms=['1년','1.5년','3년','5년'];
+ const labels=['ELB/DLB','GIC','은행예금','저축은행예금'],terms=maturities.map(months=>months<12?months+'개월':months/12+'년');
  const nav=document.createElement('div');nav.className='sales-view-tabs';nav.setAttribute('role','tablist');nav.setAttribute('aria-label','금리표 보기 방식');
  nav.innerHTML=['전체 금리표','만기별 금리순'].map((label,i)=>`<button id="sales-view-tab-${i?'ranking':'full'}" type="button" role="tab" aria-controls="sales-view-${i?'ranking':'full'}" aria-selected="${!i}" tabindex="${i?-1:0}">${label}</button>`).join('');
  const full=document.createElement('section'),ranking=document.createElement('section');
