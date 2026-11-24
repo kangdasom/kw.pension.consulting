@@ -75,7 +75,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
      assert.equal(result.sources.length,90);
     }else assert.equal(result.sources.length,98);
     const expectedTerms=plan==='db'?['1년','1.5년','3년','5년']:['3개월','6개월','1년','2년','3년','5년'];
-    assert.deepEqual(await page.locator('.sales-rate-table th.rate-head').allTextContents(),expectedTerms);
+    assert.deepEqual(await page.locator('#panel-sales .sales-rate-table th.rate-head .rate-sort-button > span:first-child').allTextContents(),expectedTerms);
     assert.deepEqual(await page.locator('#periodMenu label').allTextContents().then(a=>a.map(s=>s.trim())),expectedTerms);
     assert.equal(await page.locator('#maturitySort').inputValue(),plan==='db'?'0':'2');
     assert.equal(result.all.indices.length,expectedTerms.length);

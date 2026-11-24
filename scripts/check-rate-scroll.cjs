@@ -8,7 +8,8 @@ let top=300,bottom=3000,modal=false,hasLayout=true;
 let widths=[42,44,66,36,38,38,38,38,34,38];
 const cells=widths.map((width,index)=>({...node(),getBoundingClientRect:()=>({width:widths[index]}),remove(){this.removed=true}}));
 head.rows=[{cells}];head.getBoundingClientRect=()=>({top,bottom:top+32,height:32});
-head.cloneNode=()=>({rows:[{cells:cells.map(cell=>({...node(),remove(){this.removed=true}}))}]});
+const copiedButton={tabIndex:0};
+head.cloneNode=()=>({querySelectorAll:()=>[copiedButton],rows:[{cells:cells.map(cell=>({...node(),remove(){this.removed=true}}))}]});
 table.tHead=head;table.tBodies=[{rows:[{},{}]}];
 table.getBoundingClientRect=()=>({width:scroller.scrollWidth,bottom});
 scroller.getBoundingClientRect=()=>({left:8,right:382});
@@ -31,6 +32,7 @@ assert.equal(bar.hidden,false);assert.equal(bar.style.top,'760px');assert.equal(
 assert.equal(floatingHead.hidden,true);
 // Header takes over only after original row exits the viewport.
 top=-300;scroll();assert.equal(floatingHead.hidden,false);assert.equal(floatingHead.style.top,'0px');
+assert.equal(copiedButton.tabIndex,-1,'aria-hidden header has no duplicate keyboard stops');
 assert.equal(headScroll.children[0].children[0].rows[0].cells[0].style.width,'42px');
 slider.value='38';slider.events.input();flush();
 assert.equal(scroller.scrollLeft,38);assert.equal(headScroll.scrollLeft,38);

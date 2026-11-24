@@ -12,3 +12,9 @@
 .floating-rate-scroll input::-moz-range-thumb{width:28px;height:5px;border:0;border-radius:2px;background:#a1a1ad}
 .floating-rate-scroll input:focus-visible{outline:2px solid #ed2f7b;outline-offset:2px;border-radius:4px}
 @media print{.floating-rate-head,.floating-rate-scroll{display:none!important}}
+
+/* Keep the compact column widths while making the full heading clickable. */
+.table-frame .sales-rate-table thead th.rate-head{padding:0}
+.table-frame .sales-rate-table .rate-sort-button{display:block;width:100%;height:calc(var(--sales-head-height,35px) - 1px);padding:0 1px;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;line-height:inherit;white-space:nowrap;cursor:pointer}
+.rate-sort-indicator{font-size:.65em;vertical-align:1px}
+.table-frame .sales-rate-table .rate-sort-button:focus-visible{outline:2px solid #db2976;outline-offset:-3px}

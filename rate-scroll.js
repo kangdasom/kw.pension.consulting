@@ -32,6 +32,8 @@
     const copy = document.createElement('table');
     copy.className = table.className;
     const head = table.tHead.cloneNode(true);
+    // The original buttons provide keyboard access; omit hidden duplicate stops.
+    head.querySelectorAll('.rate-sort-button').forEach(button=>button.tabIndex=-1);
     const originalCells = [...table.tHead.rows[0].cells];
     [...head.rows[0].cells].forEach((cell,index) => {
       const original = originalCells[index];
@@ -100,7 +102,7 @@
   listen(window,'resize',() => schedule(true));
   if(window.visualViewport)listen(window.visualViewport,'resize',() => schedule(true));
   if(window.visualViewport)listen(window.visualViewport,'scroll',() => schedule());
-  const changes=new MutationObserver(() => schedule(true));changes.observe(table,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden']});
+  const changes=new MutationObserver(() => schedule(true));changes.observe(table,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','aria-sort']});
   const visibility = new MutationObserver(() => schedule(true));
   visibility.observe(panel,{attributes:true,attributeFilter:['hidden']});
   document.querySelectorAll('.modal-backdrop').forEach(modal=>visibility.observe(modal,{attributes:true,attributeFilter:['hidden']}));

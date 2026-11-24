@@ -76,12 +76,35 @@ function filteredRows(){
   let rows = rates.filter(row=>categories.includes(row.category==='예금' ? row.type : row.category) && visible.some(i=>row.terms[maturities[i]]) &&
     (els.pensionFilter.value==='all' || row.pension===els.pensionFilter.value) &&
     (els.lineupFilter.value==='all' || row.lineup===els.lineupFilter.value) &&
-    (els.proposalFilter.value==='all' || visible.some(i=>row.terms[maturities[i]] && proposalMatches(termProposalState(row,maturities[i])))));
+    (window.RateScheme?.customer || els.proposalFilter.value==='all' || visible.some(i=>row.terms[maturities[i]] && proposalMatches(termProposalState(row,maturities[i])))));
   if(els.ratingFilter.value!=='all') rows = rows.filter(row=>row.grade && ratingOrder.includes(row.grade) && ratingOrder.indexOf(row.grade)<=ratingOrder.indexOf(els.ratingFilter.value));
   if(els.sortFilter.value==='rating') rows.sort((a,b)=>gradeRank(a)-gradeRank(b) || defaultOrder(a,b));
   else if(els.sortFilter.value==='rate') rows.sort((a,b)=>compareRate(a,b,Number(document.getElementById('maturitySort').value)) || defaultOrder(a,b));
   else rows.sort(defaultOrder);
   return rows;
+}
+function sortByMaturity(index){
+  if(!selectedMaturities().includes(index))return;
+  els.sortFilter.value='rate';
+  document.getElementById('maturitySort').value=String(index);
+  render();
+}
+function updateRateHeaders(visible){
+  // Only update the source header; the viewport controller copies it afterwards.
+  document.querySelectorAll('#panel-sales .sales-rate-table .rate-head').forEach((head,index)=>{
+    head.hidden=!visible.includes(index);
+    head.setAttribute('scope','col');
+    const months=maturities[index],label=months<12?months+'개월':months/12+'년';
+    const active=!head.hidden&&els.sortFilter.value==='rate'&&Number(document.getElementById('maturitySort').value)===index;
+    if(active)head.setAttribute('aria-sort','descending');else head.removeAttribute('aria-sort');
+    let button=head.querySelector('.rate-sort-button');
+    if(!button){
+      head.innerHTML=`<button type="button" class="rate-sort-button" data-rate-sort="${index}" aria-label="${label} 금리 높은 순으로 정렬"><span>${label}</span><span class="rate-sort-indicator" aria-hidden="true"></span></button>`;
+      button=head.querySelector('.rate-sort-button');
+    }
+    const indicator=button.querySelector('.rate-sort-indicator'),text=active?'▼':'';
+    if(indicator.textContent!==text)indicator.textContent=text;
+  });
 }
 function render(){
   window.RateStatus?.hide();
@@ -91,7 +114,7 @@ function render(){
   [...sort.options].forEach(option=>option.hidden=!visible.includes(Number(option.value)));
   if(visible.length && !visible.includes(Number(sort.value))) sort.value=String(visible[0]);
   const rows = filteredRows(); els.resultCount.textContent=rows.length; els.emptyState.hidden=rows.length!==0;
-  document.querySelectorAll('.rate-head').forEach((h,i)=>h.hidden=!visible.includes(i));
+  updateRateHeaders(visible);
   els.rateTableBody.innerHTML=rows.map(row=>{
     const [state,cls]=proposalState(row);
     const productName = row.type === '저축은행예금' ? '저축은행<br>예금' : escapeHtml(row.type);

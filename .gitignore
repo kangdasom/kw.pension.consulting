@@ -25,6 +25,7 @@
 !/scripts/check-rates.cjs
 !/scripts/check-management.cjs
 !/scripts/check-rate-scroll.cjs
+!/scripts/check-header-sort-ui.cjs
 !/scripts/check-rate-export.cjs
 !/scripts/check-rate-export-ui.cjs
 !/scripts/check-rate-upload.cjs
