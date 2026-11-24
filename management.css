@@ -72,3 +72,21 @@
 .notice-request { margin-top: 8px; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
 .notice-request textarea { box-sizing: border-box; width: 100%; }
 .notice-request a { display: inline-block; margin: 4px 8px 4px 0; }
+
+/* Maturity-specific limits above one set of product/month details. */
+.detail-terms{margin-top:8px;border:1px solid #e2e0eb}
+.detail-term-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.detail-term-table .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.detail-term-table th,.detail-term-table td{padding:7px 8px;height:auto;border-bottom:1px solid #e6e5ed;font-size:11px;line-height:1.4;text-align:center;white-space:normal}
+.detail-term-table thead th{background:#f6f5fa;color:#55516c;font-weight:600}
+.detail-term-table th:first-child{width:60px}
+.detail-term-table th:nth-child(2){width:108px}
+.detail-term-table tbody th{color:#24244e;font-weight:500}
+.detail-term-table tbody tr:last-child>*{border-bottom:0}
+.detail-term-table input{width:100%;min-width:0;box-sizing:border-box}
+.detail-common{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px;margin:12px 0 8px;padding:10px 12px 12px;border:1px solid #e2e0eb;min-width:0}
+.detail-common legend{font-size:11px;font-weight:600;color:#24244e;padding:0 4px}
+.detail-common label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#777787;min-width:0}
+.detail-common input,.detail-common textarea{box-sizing:border-box;width:100%;min-width:0}
+.management-panel .detail-common textarea{font:inherit;font-size:12px;line-height:1.5;border:1px solid #cfcfdb;border-radius:4px;background:#fff;color:#363650;padding:6px 8px;resize:vertical;min-height:58px}
+@media(max-width:599px){.detail-term-table th,.detail-term-table td{padding:7px 4px}.detail-term-table th:first-child{width:40px}.detail-term-table th:nth-child(2){width:94px}.detail-common{grid-template-columns:minmax(0,1fr);gap:10px}.detail-common input[type=date]{max-width:200px}}

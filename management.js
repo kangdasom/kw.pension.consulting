@@ -166,6 +166,26 @@
   const monthRecords = () => draft.months[importData.month] || {};
   const isMonthlyTarget = row => draft.products[row.id]?.lineup === 'Y';
   const record = (row,term) => monthRecords()[termKey(row.id,term)] || {status:'확인',amount:'',reason:'',note:'',checkedAt:''};
+  // Common details stay within the month, independently of maturity availability/limits.
+  const commonKey = row => termKey(row.id,'common');
+  function commonDetails(row) {
+    const stored=monthRecords()[commonKey(row)];
+    if(stored)return stored; // Explicitly cleared common fields also win.
+    const entries=Object.keys(row.terms).map(term=>({term,...record(row,term)}));
+    const notes=[...new Set(entries.map(info=>info.note || '').filter(Boolean))];
+    return {
+      checkedAt:entries.map(info=>info.checkedAt || '').filter(Boolean).sort().at(-1) || '',
+      note:notes.length<=1?(notes[0] || ''):notes.map(note=>`${entries.filter(info=>info.note===note).map(info=>`${info.term/12}년`).join('·')}: ${note}`).join('\n')
+    };
+  }
+  function setCommonDetails(row,field,value) {
+    if(!row || !isMonthlyTarget(row) || !['checkedAt','note'].includes(field))return;
+    const previous=commonDetails(row);
+    if(previous[field]===value)return;
+    const month=draft.months[importData.month] ||= {};
+    month[commonKey(row)]={...previous,[field]:value};
+    updateDirty();
+  }
   function setRecord(row,term,field,value) {
     if (!row || !isMonthlyTarget(row) || !row.terms[term] || !maturities.includes(Number(term))) return;
     const month = draft.months[importData.month] ||= {};
@@ -251,10 +271,11 @@
   function renderDetails(row){
     if (!row || !isMonthlyTarget(row)) return;
     const box=$('termDetails'); box.dataset.row=row.id;
-    box.innerHTML=`<div class="details-title"><b>${escapeHtml(row.institution+' · '+row.type)}</b><button type="button" id="closeTermDetails">닫기</button></div><p class="management-help">물량·사유·비고는 내부 관리용이며 영업 금리표에 표시하지 않습니다.</p>${maturities.filter(t=>row.terms[t]).map(term=>{
+    const common=commonDetails(row);
+    box.innerHTML=`<div class="details-title"><b>${escapeHtml(row.institution+' · '+row.type)}</b><button type="button" id="closeTermDetails">닫기</button></div><div class="detail-terms"><table class="detail-term-table"><caption class="visually-hidden">만기별 제안가능 및 물량·한도</caption><thead><tr><th scope="col">만기</th><th scope="col">제안가능</th><th scope="col">물량·한도 (단위 포함)</th></tr></thead><tbody>${maturities.filter(t=>row.terms[t]).map(term=>{
       const info=record(row,term);
-      return `<fieldset class="term-fields" data-term="${term}"><legend>${term/12}년</legend><div class="detail-status">제안가능${statusButtons(row,term)}</div><label>물량·한도 (단위 포함)<input data-field="amount" maxlength="100" value="${escapeHtml(info.amount)}" placeholder="예: 50억원"></label><label>불가 사유${select([...new Set(['','가용 물량 없음','한도 소진','일시 중단','내부 제외','기타',info.reason || ''])],info.reason,'data-field="reason"')}</label><label>마지막 확인일<input type="date" data-field="checkedAt" value="${escapeHtml(info.checkedAt)}"></label><label class="wide">내부 비고<input data-field="note" maxlength="500" value="${escapeHtml(info.note)}"></label></fieldset>`;
-    }).join('')}`;
+      return `<tr data-term="${term}"><th scope="row">${term/12}년</th><td>${statusButtons(row,term)}</td><td><input data-field="amount" aria-label="${term/12}년 물량·한도 (단위 포함)" maxlength="100" value="${escapeHtml(info.amount)}" placeholder="예: 50억원"></td></tr>`;
+    }).join('')}</tbody></table></div><fieldset class="detail-common"><legend>공통 관리정보</legend><label>마지막 확인일<input type="date" data-common-field="checkedAt" value="${escapeHtml(common.checkedAt)}"></label><label class="detail-note">비고<textarea data-common-field="note" rows="2">${escapeHtml(common.note)}</textarea></label></fieldset>`;
     $('closeTermDetails').onclick=()=>{box.innerHTML='';delete box.dataset.row;};
   }
   function statusClick(event){
@@ -276,10 +297,12 @@
   $('manageRows').onclick=statusClick;
   $('termDetails').onclick=statusClick;
   $('termDetails').oninput=event=>{
-    const field=event.target.dataset.field;if(!field)return;
     const row=rates.find(r=>r.id===$('termDetails').dataset.row);
-    setRecord(row,event.target.closest('fieldset').dataset.term,field,event.target.value);
-    if(field==='status')renderMonthly();
+    const commonField=event.target.dataset.commonField;
+    if(commonField){setCommonDetails(row,commonField,event.target.value);return;}
+    const field=event.target.dataset.field;if(!field)return;
+    if(field!=='amount')return;
+    setRecord(row,event.target.closest('[data-term]').dataset.term,field,event.target.value);
   };
   let basicMode='institutions';
   function renderBasic(){

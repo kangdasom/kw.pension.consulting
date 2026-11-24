@@ -219,3 +219,52 @@ direct.context.confirm=()=>false;
 direct.element('manageRows').onclick({target:{dataset:{allRow:item.id,status:'N'}}});
 assert.equal(direct.element('monthlyDirty').textContent,'변경사항 없음');
 console.log('PASS: direct status buttons, institution-wide edits across hidden filters, row-only bulk, missing-term exclusion, shared reason preservation, cancel and rejected confirmation.');
+
+// Product/month common details preserve the legacy maturity records and remain drafts.
+const sharedId=app.run('rates.find(r=>r.terms[12] && r.terms[36]).id');
+const sharedKey=term=>JSON.stringify([sharedId,String(term)]);
+const legacyRecords={
+  [sharedKey(12)]:{status:'Y',amount:'10억원',reason:'기존 사유',checkedAt:'2026-11-10',note:'1년 기존 비고'},
+  [sharedKey(36)]:{status:'N',amount:'20억원',reason:'',checkedAt:'2026-11-20',note:'3년 기존 비고'}
+};
+const sharedStorage={'db-rate-management-v1':JSON.stringify({institutions:{},products:{[sharedId]:{lineup:'Y'}},months:{'2026-11':legacyRecords,'2026-10':{history:{note:'이전 월 보존'}}}})};
+const shared=boot(sharedStorage,false,'2026-11');
+const openShared=instance=>instance.element('manageRows').onclick({target:{dataset:{detail:sharedId}}});
+const editCommon=(instance,field,value)=>instance.element('termDetails').oninput({target:{dataset:{commonField:field},value}});
+const initialStorage=sharedStorage['db-rate-management-v1'];
+openShared(shared);
+assert.equal(sharedStorage['db-rate-management-v1'],initialStorage);
+const detailHtml=shared.element('termDetails').innerHTML;
+assert.doesNotMatch(detailHtml,/불가 사유|내부 비고|내부 관리용|data-field="reason"/);
+assert.equal((detailHtml.match(/data-common-field="checkedAt"/g)||[]).length,1);
+assert.equal((detailHtml.match(/data-common-field="note"/g)||[]).length,1);
+assert.match(detailHtml,/value="2026-11-20"/);
+assert.match(detailHtml,/1년: 1년 기존 비고\n3년: 3년 기존 비고/);
+editCommon(shared,'note','상품 공통 비고\n두 번째 줄');
+editCommon(shared,'checkedAt','2026-11-24');
+shared.element('termDetails').oninput({target:{dataset:{field:'amount'},value:'30억원',closest:()=>({dataset:{term:'12'}})}});
+assert.equal(sharedStorage['db-rate-management-v1'],initialStorage);
+shared.element('saveBasic').onclick();
+assert.equal(JSON.parse(sharedStorage['db-rate-management-v1']).months['2026-11'][sharedKey('common')],undefined);
+shared.element('saveMonthly').onclick();
+let storedShared=JSON.parse(sharedStorage['db-rate-management-v1']);
+assert.deepEqual(storedShared.months['2026-11'][sharedKey('common')],{checkedAt:'2026-11-24',note:'상품 공통 비고\n두 번째 줄'});
+assert.equal(storedShared.months['2026-11'][sharedKey(12)].amount,'30억원');
+assert.deepEqual(storedShared.months['2026-11'][sharedKey(36)],legacyRecords[sharedKey(36)]);
+assert.equal(storedShared.months['2026-11'][sharedKey(12)].reason,'기존 사유');
+assert.equal(storedShared.months['2026-10'].history.note,'이전 월 보존');
+const sharedReload=boot(sharedStorage,false,'2026-11');openShared(sharedReload);
+assert.match(sharedReload.element('termDetails').innerHTML,/상품 공통 비고\n두 번째 줄/);
+editCommon(sharedReload,'note','');editCommon(sharedReload,'checkedAt','');
+sharedReload.element('saveMonthly').onclick();
+const sharedCleared=boot(sharedStorage,false,'2026-11');openShared(sharedCleared);
+assert.doesNotMatch(sharedCleared.element('termDetails').innerHTML,/1년 기존 비고|3년 기존 비고|2026-11-20/);
+editCommon(sharedCleared,'note','취소 대상');sharedCleared.element('cancelMonthly').onclick();openShared(sharedCleared);
+assert.doesNotMatch(sharedCleared.element('termDetails').innerHTML,/취소 대상/);
+const commonNextMonth=boot(sharedStorage,false,'2026-12');openShared(commonNextMonth);
+assert.doesNotMatch(commonNextMonth.element('termDetails').innerHTML,/기존 비고|2026-11-/);
+const commonFailure=boot(sharedStorage,true,'2026-11');openShared(commonFailure);
+editCommon(commonFailure,'note','저장 실패 후 초안');commonFailure.element('saveMonthly').onclick();openShared(commonFailure);
+assert.match(commonFailure.element('termDetails').innerHTML,/저장 실패 후 초안/);
+assert.match(commonFailure.element('monthlyMessage').textContent,/저장하지 못했습니다/);
+console.log('PASS: monthly common date/note, legacy conflict recovery, independent limits/statuses, draft/save/cancel/reload, explicit clears, historical months and failed-save draft preservation.');
