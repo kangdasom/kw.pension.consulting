@@ -25,7 +25,7 @@
     document.body.classList.add('customer-mode');
     document.querySelectorAll('#proposalFilter,#rankingProposal').forEach(control=>{control.value='all';control.closest('label').hidden=true;});
     const guide=document.querySelector('#infoModal .guide-list');
-    guide.innerHTML=`<div><b>금리 기준 및 GIC 안내</b><ul><li>본 금리표는 퇴직연금 <strong>${scheme.label} 제도</strong>에 적용되는 금리입니다.</li><li>최초 조회는 당사 라인업 Y 상품을 표시하며, 디폴트옵션 전용 상품은 제외합니다.</li><li>GIC는 공시금리와 단리연환산금리를 괄호 안에 함께 표시합니다. 환산금리는 동일 산식으로 계산한 참고 수치입니다.</li><li>상품 매수 전 제공기관의 공시금리와 매수가능여부를 확인해주세요.</li></ul></div><div><b>조회 및 저장</b><ul><li>상품군·만기·등급으로 조회하고 금리순으로 정렬할 수 있습니다.</li><li>현재 조회 결과는 선택한 상품·만기·정렬을 저장합니다. 전체 라인업 금리표는 해당 제도의 라인업 Y 상품과 3개월·6개월·1년·2년·3년·5년을 저장합니다.</li></ul></div>${sortGuideHtml}`;
+    guide.innerHTML=`<div><b>금리 기준 및 GIC 안내</b><ul><li>본 금리표는 퇴직연금 <strong>${scheme.label} 제도</strong>에 적용되는 금리입니다.</li><li>최초 조회는 당사 라인업 Y 상품을 표시하며, 디폴트옵션 전용 상품은 제외합니다.</li><li>GIC는 공시금리와 단리연환산금리를 괄호 안에 함께 표시합니다. 환산금리는 동일 산식으로 계산한 참고 수치입니다.</li><li>저축은행 예금은 만기시 원금과 이자 합산하여 기관별 1억원까지 매수가능합니다. 한도 계산 시 DC, IRP에서 매수한 금액은 합산됩니다.</li><li>ELB는 청약 모집 후 발행하는 상품으로, 상시 가입 불가합니다.</li></ul></div><div><b>조회 및 저장</b><ul><li>상품군·만기·등급으로 조회하고 금리순으로 정렬할 수 있습니다.</li><li>현재 조회 결과는 선택한 상품·만기·정렬을 저장합니다. 전체 라인업 금리표는 해당 제도의 라인업 Y 상품과 3개월·6개월·1년·2년·3년·5년을 저장합니다.</li></ul></div>${sortGuideHtml}`;
     const all=document.querySelector('[data-save-scope="all"]');
     all.querySelector('b').textContent='전체 라인업 금리표';
     all.querySelector('small').textContent=scheme.label+' 라인업 Y · 3개월·6개월·1년·2년·3년·5년 저장';

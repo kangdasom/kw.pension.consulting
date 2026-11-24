@@ -4,20 +4,33 @@
   const repository='kangdasom/kw.pension.consulting';
   const site='https://kangdasom.github.io/kw.pension.consulting/';
   const title='사이트 공지 게시 요청';
+  const paths={DB:'notice.json',DC:'notice-dc.json',IRP:'notice-irp.json'};
+  function noticePath(plan='DB'){
+    if(!Object.hasOwn(paths,plan))throw Error('공지 대상 제도가 올바르지 않습니다.');
+    return paths[plan];
+  }
+  function requestPlan(event){
+    if(typeof event.issue?.body!=='string'||event.issue.body.length>20000)throw Error('게시 요청 형식이 올바르지 않습니다.');
+    const value=JSON.parse(event.issue.body);
+    const plan=value.schema==='site-notice-v1'?'DB':value.schema==='site-notice-v2'?value.plan:null;
+    if(typeof plan!=='string')throw Error('공지 대상 제도가 올바르지 않습니다.');
+    noticePath(plan);return plan;
+  }
   function validate(value){
     if(!value || typeof value.text!=='string' || value.text.length>3000 || typeof value.revision!=='string' || !value.revision || value.revision.length>100)throw Error('공지 파일 형식이 올바르지 않습니다.');
     return {text:value.text,revision:value.revision,updatedAt:value.updatedAt||null};
   }
-  function prepare(text,baseline){
+  function prepare(text,baseline,plan='DB'){
+    noticePath(plan);
     if(typeof text!=='string'||text.length>3000)throw Error('공지는 3000자 이내로 작성해주세요.');
     validate(baseline);
     const notice={text:text.trim(),revision:crypto.randomUUID(),updatedAt:null};
-    const body=JSON.stringify({schema:'site-notice-v1',baseRevision:baseline.revision,notice},null,2);
+    const body=JSON.stringify({schema:'site-notice-v2',plan,baseRevision:baseline.revision,notice},null,2);
     const url=new URL(`https://github.com/${repository}/issues/new`);
     url.searchParams.set('title',title);url.searchParams.set('body',body);
     const needsPaste=url.href.length>7500;
     if(needsPaste)url.searchParams.delete('body');
-    return {notice,body,url:url.href,needsPaste};
+    return {plan,notice,body,url:url.href,needsPaste};
   }
   function parseIssue(event,current){
     validate(current);
@@ -25,7 +38,7 @@
     const body=event.issue.body;
     if(typeof body!=='string'||body.length>20000)throw Error('게시 요청 형식이 올바르지 않습니다.');
     const value=JSON.parse(body);
-    if(value.schema!=='site-notice-v1')throw Error('게시 요청 형식이 올바르지 않습니다.');
+    requestPlan(event);
     const notice=validate(value.notice);
     if(!/^[0-9a-f-]{36}$/.test(notice.revision))throw Error('게시 요청 번호가 올바르지 않습니다.');
     if(current.revision===notice.revision){
@@ -41,12 +54,12 @@
     if(!response.ok)throw Error('공지를 불러오지 못했습니다. 잠시 후 다시 확인해주세요.');
     return response.json();
   }
-  async function deployed(){return validate(await get(new URL(`notice.json?t=${Date.now()}`,site)));}
-  async function latest(){
-    const file=await get(`https://api.github.com/repos/${repository}/contents/notice.json?ref=main&t=${Date.now()}`);
+  async function deployed(plan='DB'){return validate(await get(new URL(`${noticePath(plan)}?t=${Date.now()}`,site)));}
+  async function latest(plan='DB'){
+    const file=await get(`https://api.github.com/repos/${repository}/contents/${noticePath(plan)}?ref=main&t=${Date.now()}`);
     const value=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(file.content.replace(/\s/g,'')),c=>c.charCodeAt(0))));
     return {notice:validate(value)};
   }
-  const api={repository,site,title,validate,prepare,parseIssue,deployed,latest};
+  const api={repository,site,title,noticePath,requestPlan,validate,prepare,parseIssue,deployed,latest};
   if(typeof module==='object'&&module.exports)module.exports=api;else root.NoticePublisher=api;
 })(globalThis);

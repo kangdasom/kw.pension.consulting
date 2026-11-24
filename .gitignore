@@ -7,6 +7,8 @@
 !/*.js
 !/export-brand.png
 !/notice.json
+!/notice-dc.json
+!/notice-irp.json
 /rates-data.november.pending.js
 !/assets/
 /assets/*
