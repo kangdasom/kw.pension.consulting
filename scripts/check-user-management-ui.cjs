@@ -17,7 +17,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT || 'playwright');
   const before=await page.evaluate(()=>JSON.stringify({storage:{...localStorage},rows:RateExport.snapshot('current').rows}));
   await page.locator('#tab-users').click();assert(await page.locator('#panel-users').isVisible());
   assert(!/초안|예정|준비중/.test(await page.locator('#panel-users').innerText()));
-  assert.match(await page.locator('#panel-users .management-notice').innerText(),/실제 로그인과 연결되지 않습니다/);
+  assert.equal(await page.locator('#panel-users .management-notice').count(),0);
   assert(await page.locator('#rateScrollBar').count()===0 || await page.locator('#rateScrollBar').isHidden());
   await page.locator('#userAdd').click();await page.locator('#userName').fill('테스트 담당자');await page.locator('#userEmail').fill('QA@example.com');
   await page.locator('#userForm button[type=submit]').click();

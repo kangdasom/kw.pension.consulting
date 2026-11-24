@@ -106,16 +106,15 @@
   shell.append(admin,basic,users);
   const options = (values, value) => values.map(v => `<option value="${escapeHtml(v)}" ${v===(value || '')?'selected':''}>${escapeHtml(v || '미설정')}</option>`).join('');
   const select = (values,value,attrs) => `<select ${attrs}>${options(values,value)}</select>`;
-  const securityNote = '<p class="management-notice">금리·한도·기관 관리정보는 이 브라우저에만 저장됩니다. 공지는 kangdasom GitHub 계정으로 게시 요청을 제출한 뒤 전체 방문자에게 배포됩니다.</p>';
-  admin.innerHTML = `${securityNote}<div class="management-heading"><h1>월별 금리·제안가능 관리</h1><span class="source-badge">실제 엑셀 데이터</span></div>
+  admin.innerHTML = `<div class="management-heading"><h1>월별 금리·제안가능 관리</h1><span class="source-badge">실제 엑셀 데이터</span></div>
     <div class="management-period"><label>기준 월 <select aria-label="관리 기준 월"><option>${escapeHtml(importData.month)}</option></select></label><button type="button" id="manageImport">엑셀 검증·반영</button></div>
-    <p class="management-help" id="managementPeriodHelp">적용기간 ${escapeHtml(importData.start)} ~ ${escapeHtml(importData.end)} · DB법인 라인업 Y 상품의 제안가능 여부를 관리합니다. DC·개인IRP에는 적용하지 않습니다. 새 월의 제안가능 상태는 확인부터 시작합니다.</p>
+    <p class="management-help" id="managementPeriodHelp">적용기간 ${escapeHtml(importData.start)} ~ ${escapeHtml(importData.end)} · DB법인 라인업 Y 상품의 제안가능 여부를 관리합니다. DC·개인IRP에는 적용하지 않습니다.</p>
     <section class="notice-editor" aria-labelledby="noticeEditorTitle">
       <div class="notice-editor-heading"><h2 id="noticeEditorTitle">공지작성</h2><span id="noticeDirty">변경사항 없음</span></div>
       <label for="noticePlan">공지 대상 <select id="noticePlan"><option value="DB">DB</option><option value="DC">DC</option><option value="IRP">개인IRP</option></select></label>
       <label for="noticeText">공지 내용</label>
       <textarea id="noticeText" rows="3" maxlength="3000" placeholder="금리표 이용자에게 안내할 내용을 작성해주세요." aria-describedby="noticeHelp"></textarea>
-      <div class="notice-editor-footer"><p id="noticeHelp">선택한 제도에만 게시됩니다. GitHub에서 kangdasom 계정으로 로그인한 뒤 Submit new issue(또는 Create)를 누르면 자동 배포됩니다. 로그인 상태가 유지되면 다음에도 인증키 없이 게시할 수 있습니다. 내용을 비워 게시하면 해당 제도의 공지가 내려갑니다.</p><div><button type="button" id="noticeCancel">변경 취소</button><button type="button" class="management-primary" id="noticeSave">GitHub 로그인으로 게시</button></div></div>
+      <div class="notice-editor-footer"><p id="noticeHelp">선택한 제도에만 게시됩니다. 내용을 비워 게시하면 해당 제도의 공지가 내려갑니다.</p><div><button type="button" id="noticeCancel">변경 취소</button><button type="button" class="management-primary" id="noticeSave">게시</button></div></div>
       <div id="noticeRequest" class="notice-request" hidden><p id="noticeRequestHelp"></p><textarea id="noticeRequestBody" readonly rows="3" aria-label="긴 공지 게시 요청 복사용" hidden></textarea><button id="noticeCopyRequest" type="button" hidden>게시 요청 복사</button><a id="noticeSubmit" target="_blank" rel="noopener noreferrer">GitHub 게시 요청 열기</a> <button id="noticeStop" type="button">배포 확인 중단</button></div>
       <div class="notice-publish-tools"><button type="button" id="noticeLatest">최신 게시본 불러오기</button><button type="button" id="noticeLegacy" hidden>이 브라우저의 이전 공지 불러오기</button><a href="https://github.com/kangdasom/kw.pension.consulting/actions/workflows/publish-notice.yml" target="_blank" rel="noopener noreferrer">게시 처리 내역</a><a href="https://github.com/kangdasom/kw.pension.consulting/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">배포 내역</a></div>
       <p id="noticeMessage" class="management-message" role="status"></p>
@@ -125,7 +124,7 @@
     <div class="management-bulk"><strong class="bulk-label">일괄 변경</strong><select id="bulkScope" aria-label="일괄 변경 대상"><option value="selected">선택 상품</option><option value="institution">기관 전체</option></select><select id="bulkInstitution" aria-label="일괄 변경 기관" hidden></select><span id="manageSelection">0개 선택</span><span id="institutionScope" class="management-help" hidden></span><select id="bulkTerm" aria-label="일괄 변경 만기"><option value="all">전체 만기</option>${maturities.map((m,i)=>`<option value="${m}">${['1년','1.5년','3년','5년'][i]}</option>`).join('')}</select><select id="bulkStatus" aria-label="일괄 변경 상태">${options(['확인','Y','N'],'확인')}</select><label class="bulk-reason">사유 <input id="bulkReason" maxlength="100" placeholder="선택 입력 · 기존 사유 유지"></label><button type="button" id="bulkApply">일괄 변경</button></div>
     <div class="manage-table-meta"><p class="management-help" id="manageCount"></p><div class="rate-unit">(연, %)</div></div><div class="management-scroll"><table class="management-table monthly-table"><colgroup><col class="manage-check-col"><col class="manage-institution-col"><col class="manage-type-col">${maturities.map(()=>'<col class="manage-term-col">').join('')}<col class="manage-all-col"><col class="manage-detail-col"></colgroup><thead><tr><th><input id="selectVisible" type="checkbox" aria-label="조회 상품 전체 선택"></th><th>제공기관</th><th>상품</th>${['1년','1.5년','3년','5년'].map(v=>`<th>${v}</th>`).join('')}<th>전체 만기</th><th>상세</th></tr></thead><tbody id="manageRows"></tbody></table></div>
     <div id="termDetails"></div><div class="management-savebar"><span id="monthlyDirty">변경사항 없음</span><button type="button" id="cancelMonthly">변경 취소</button><button type="button" id="salesPreview">영업화면 확인</button><button type="button" class="management-primary" id="saveMonthly">저장·반영</button></div><p id="monthlyMessage" class="management-message" role="status"></p>`;
-  basic.innerHTML = `${securityNote}<div class="management-heading"><h1>기본정보 설정</h1><span class="source-badge">월과 무관하게 유지</span></div><p class="management-help">신용등급·사업자 여부는 기관별, 라인업은 상품별로 설정합니다. 매월 다시 입력하지 않습니다.</p>
+  basic.innerHTML = `<div class="management-heading"><h1>기본정보 설정</h1></div><p class="management-help">신용등급·사업자 여부는 기관별, 라인업은 상품별로 설정합니다.</p>
     <div class="basic-subtabs"><button type="button" id="showInstitutions" aria-pressed="true">기관정보</button><button type="button" id="showLineups" aria-pressed="false">상품 라인업</button></div><input id="basicSearch" type="search" placeholder="기관·상품 검색" aria-label="기본정보 검색">
     <div class="management-scroll"><table class="management-table" id="basicTable"><thead id="basicHead"></thead><tbody id="basicRows"></tbody></table></div>
     <div class="management-savebar"><span id="basicDirty">변경사항 없음</span><button type="button" class="management-primary" id="saveBasic">저장·반영</button></div><p id="basicMessage" class="management-message" role="status"></p>`;
@@ -338,7 +337,7 @@
       $('termDetails').innerHTML='';delete $('termDetails').dataset.row;
       const monthSelect=admin.querySelector('.management-period select');
       monthSelect.innerHTML=`<option>${escapeHtml(next.month)}</option>`;
-      $('managementPeriodHelp').textContent=`적용기간 ${next.start} ~ ${next.end} · DB법인 라인업 Y 상품의 제안가능 여부를 관리합니다. DC·개인IRP에는 적용하지 않습니다. 새 월의 제안가능 상태는 확인부터 시작합니다.`;
+      $('managementPeriodHelp').textContent=`적용기간 ${next.start} ~ ${next.end} · DB법인 라인업 Y 상품의 제안가능 여부를 관리합니다. DC·개인IRP에는 적용하지 않습니다.`;
       renderMonthly();renderBasic();updateDirty();render();
     }
   };

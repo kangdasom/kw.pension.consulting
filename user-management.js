@@ -17,7 +17,6 @@
   } catch { loadFailed = true; }
   panel.innerHTML = `
     <div class="management-heading"><h1>사용자관리</h1></div>
-    <p class="management-notice">현재 등록 정보는 이 브라우저에만 저장되며 실제 로그인과 연결되지 않습니다. 초대 링크 발급과 접근 제한은 연결 후 사용할 수 있습니다.</p>
     <div class="user-tools"><input id="userSearch" type="search" aria-label="이름·이메일 검색" placeholder="이름·이메일 검색">
       <select id="userRoleFilter" aria-label="권한 필터"><option value="">전체 권한</option><option value="sales">영업담당자</option><option value="product">상품담당자</option></select>
       <select id="userStateFilter" aria-label="상태 필터"><option value="">전체 상태</option><option value="pending">초대대기</option><option value="active">이용중</option><option value="suspended">이용중지</option></select>
