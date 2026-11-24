@@ -11,7 +11,7 @@ const api=context.window.RateExport;
 const before=run('JSON.stringify(rates)');
 const initial=api.snapshot('current',new Date('2026-11-10T06:00:00Z'));
 assert.equal(initial.rows.length,52);
-assert.equal(initial.title,'2026년 11월 원리금보장상품 금리');
+assert.equal(initial.title,'2026년 11월 원리금보장상품 공시금리 (DB)');
 assert.deepEqual(copy(initial.rows.map(r=>r.id)),copy(run('filteredRows().map(r=>r.id)')));
 const filtersBefore=[el('lineupFilter').value,el('proposalFilter').value,el('sortFilter').value,el('maturitySort').value];
 const all=api.snapshot('all',new Date('2026-11-10T06:00:00Z'));

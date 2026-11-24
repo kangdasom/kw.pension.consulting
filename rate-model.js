@@ -100,7 +100,7 @@ els.lineupFilter.value='Y'; els.proposalFilter.value='all';
 els.sortFilter.value='rate';
 document.getElementById('maturitySort').value='0';
 const heading = document.querySelector('.page-heading');
-function ratePageTitle(){return `${monthLabel} ${window.RateScheme ? window.RateScheme.label+' ' : ''}원리금보장상품 금리`;}
+function ratePageTitle(){return `${monthLabel} 원리금보장상품 공시금리 (${window.RateScheme?.label||'DB'})`;}
 heading.querySelector('h1').textContent=ratePageTitle();
 document.title = '퇴직연금 원리금보장상품 금리표';
 heading.querySelector('p').textContent=`적용기간 : ${importData.start.replaceAll('-','.')} ~ ${importData.end.replaceAll('-','.')}`;

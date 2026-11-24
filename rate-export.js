@@ -41,7 +41,7 @@
     const rows=publicRows(source,indices);
     const sections=ranking?.sections?.map(section=>({label:section.label,indices:section.indices.slice(),rows:publicRows(section.rows,section.indices)}));
     const created=now.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
-    return {scope:all?'all':'current',title:`${monthLabel} ${window.RateScheme ? window.RateScheme.label+' ' : ''}원리금보장상품 금리`,period:`${importData.start} ~ ${importData.end}`,
+    return {scope:all?'all':'current',title:`${monthLabel} 원리금보장상품 공시금리 (${window.RateScheme?.label||'DB'})`,period:`${importData.start} ~ ${importData.end}`,
       condition,sortLabel,created,memo:exportMemo,indices:indices.slice(),rows,...(sections?{sections}:{}),
       filename:`${importData.month.replace('-','년')}월_${window.RateScheme ? window.RateScheme.label+'_' : ''}금리표_${all?'전체':'현재조회'}.png`};
   }

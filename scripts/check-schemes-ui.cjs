@@ -29,7 +29,8 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     await page.evaluate(()=>document.fonts.ready);assert.ok(await page.locator('.app-shell').isVisible());assert.ok(!await page.locator('#schemeEntry').isVisible());await fit();
     const result=await page.evaluate(()=>({scheme:RateScheme.id,title:document.querySelector('.page-heading h1').textContent,rows:filteredRows().map(r=>({id:r.id,lineup:r.lineup})),sources:rates.map(r=>({id:r.id,terms:r.terms})),filter:els.lineupFilter.value,all:RateExport.snapshot('all'),storage:JSON.stringify({...localStorage})}));
     assert.equal(result.scheme,plan.toUpperCase());assert.equal(result.filter,'Y');assert.ok(result.rows.length>0);assert.ok(result.rows.every(r=>r.lineup==='Y'));
-    assert.ok(result.title.includes(plan==='irp'?'개인IRP':plan.toUpperCase()));
+    assert.equal(result.title,'2026년 11월 원리금보장상품 공시금리 ('+(plan==='irp'?'개인IRP':plan.toUpperCase())+')');
+    assert.equal(result.all.title,result.title);
     if(plan!=='db'){
      assert.equal(await page.locator('#panel-sales .rate-status-trigger').count(),0);
      assert.ok(!await page.locator('.main-tabs').isVisible());
@@ -54,7 +55,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
       await page.locator('#infoButton').click();const guide=await page.locator('#infoModal .guide-list').innerText();assert.ok(!guide.includes('제안가능'),JSON.stringify({guide,errors}));await page.locator('[data-close="infoModal"]').click();
      }
     }
-    await page.locator('.scheme-home').click();assert.ok(await page.locator('#schemeEntry').isVisible());
+    await page.locator('.scheme-home').click();await page.locator('#schemeEntry').waitFor({state:'visible'});assert.ok(await page.locator('#schemeEntry').isVisible());
    }
   }
   // Manual DB and shared DCIRP lineups remain independent and survive navigation.
