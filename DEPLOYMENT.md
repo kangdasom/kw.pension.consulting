@@ -1,5 +1,16 @@
 # GitHub Pages 배포
 
+## 제도별 진입과 조회 — 2026-11-24
+
+- 기본 주소는 제도 선택 진입페이지다. 월·적용기간 아래에서 DB / DC / 개인IRP를 선택한다.
+- 직접 조회 주소는 `index.html?plan=db`, `index.html?plan=dc`, `index.html?plan=irp`다. 로고 오른쪽의 제도 선택 링크로 돌아간다.
+- DB는 기존 관리정보·조회·저장을 유지한다. DC·개인IRP는 각각 해당 금리 열을 읽으며 DCIRP 공통 라인업 Y가 기본이고 모든 상품군을 처음부터 포함한다. 고객 화면에 관리 탭·제안가능 필터·상태 말풍선은 표시하지 않는다. 디폴트옵션 상품은 제외한다.
+- DB 기관정보 → 상품 라인업에서 DB와 DC·개인IRP 라인업을 나란히 관리한다. 기관 등급·사업자는 공통이며 월별 제안가능·한도는 DB에만 적용한다. 직접 저장한 빈 값도 초기값보다 우선한다.
+- 업로드는 같은 XLSX의 DB·DC·개인IRP 열을 각각 검증하고 최종 확인 후 한 번에 저장한다. 기존 `db-rate-sources-v1`의 DB 기록을 보존하고 `customerPlans.DC/IRP`에 제도별 월 기록을 추가한다. 한 제도라도 반영 불가이거나 저장 실패하면 세 제도 모두 변경하지 않는다.
+- DC·개인IRP 전체 저장은 해당 제도의 라인업 Y 전체와 중요 네 만기를 출력한다. 현재 결과 저장은 선택 조건을 유지한다. PNG 제목과 파일명에 제도를 표시한다.
+- 브라우저별 관리·업로드 저장 범위는 기존과 같다. 실제 금리·공통 초기 라인업은 배포 JS에 포함되지만 사용자 브라우저에서 편집한 값을 다른 방문자에게 자동 전파하지 않는다.
+- 추가 검사: `node scripts/check-schemes.cjs`, `RATE_STATUS_PLAYWRIGHT` 지정 후 `node scripts/check-schemes-ui.cjs`. 배포 후에는 `SCHEMES_LIVE=1`로 실제 HTTPS 사이트를 확인한다.
+
 대상 저장소: https://github.com/kangdasom/kw.pension.consulting
 
 예상 주소: https://kangdasom.github.io/kw.pension.consulting/

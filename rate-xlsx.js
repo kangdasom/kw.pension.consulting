@@ -59,7 +59,7 @@
         const values={},formulas=[];
         for(const c of nodes(r,'c')){
           const col=(c.getAttribute('r')||'').replace(/\d/g,'');
-          if(!/^[A-J]$/.test(col))continue;
+          if(!/^[A-Z]{1,2}$/.test(col))continue;
           const type=c.getAttribute('t'),v=nodes(c,'v')[0]?.textContent??'';
           values[col]=type==='s'?(strings[Number(v)]??''):type==='inlineStr'?nodes(c,'t').map(t=>t.textContent).join(''):v;
           if(nodes(c,'f').length)formulas.push(col);
@@ -70,7 +70,13 @@
       const expected={B:/적용.*(시작|개시)|FROM/i,C:/적용.*(종료|만료)|TO/i,D:/제공기관|금융기관|기관명/,F:/상품.*(상세|중).*분류|상품.*구분/,H:/기간|개월|만기/,J:/^DB(?:금리)?$/i};
       const missing=Object.entries(expected).filter(([col,re])=>!re.test(norm(header[col]))).map(([col])=>col);
       if(missing.length)throw Error(`필수 열 형식이 다릅니다(${missing.join('·')}열). 당사 업로드 양식의 첫 행과 B·C·D·F·H·J열을 확인하세요.`);
-      return parsed.slice(1);
+      const rows=parsed.slice(1);
+      rows.rateColumns={DB:'J'};
+      for(const [col,value] of Object.entries(header)){
+        if(/^DC(?:금리)?$/i.test(norm(value)))rows.rateColumns.DC=col;
+        if(/^개인IRP(?:금리)?$/i.test(norm(value)))rows.rateColumns.IRP=col;
+      }
+      return rows;
     }
     return {sheets,date1904,rows};
   }

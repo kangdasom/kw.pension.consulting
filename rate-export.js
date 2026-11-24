@@ -22,7 +22,7 @@
     const exportMemo=all?'':memoText(memo);
     const ranking=!all&&window.SalesRanking?.active()?window.SalesRanking.current():null;
     const indices=all?[0,1,2,3]:ranking?ranking.indices:selectedMaturities();
-    const source=all ? rates.filter(row=>maturities.some(term=>row.terms[term])).slice().sort(defaultOrder) : ranking?ranking.rows:filteredRows();
+    const source=all ? rates.filter(row=>maturities.some(term=>row.terms[term])&&(!window.RateScheme?.customer||row.lineup==='Y')).slice().sort(defaultOrder) : ranking?ranking.rows:filteredRows();
     if(!indices.length || !source.length) throw Error('저장할 상품이 없습니다. 조회 조건과 만기를 확인해 주세요.');
     const sort=els.sortFilter.value;
     const sortLabel=ranking?ranking.sortLabel:all || sort==='default' ? '상품군별 기본순' :
@@ -41,9 +41,9 @@
     const rows=publicRows(source,indices);
     const sections=ranking?.sections?.map(section=>({label:section.label,indices:section.indices.slice(),rows:publicRows(section.rows,section.indices)}));
     const created=now.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
-    return {scope:all?'all':'current',title:`${monthLabel} 원리금보장상품 금리`,period:`${importData.start} ~ ${importData.end}`,
+    return {scope:all?'all':'current',title:`${monthLabel} ${window.RateScheme ? window.RateScheme.label+' ' : ''}원리금보장상품 금리`,period:`${importData.start} ~ ${importData.end}`,
       condition,sortLabel,created,memo:exportMemo,indices:indices.slice(),rows,...(sections?{sections}:{}),
-      filename:`${importData.month.replace('-','년')}월_금리표_${all?'전체':'현재조회'}.png`};
+      filename:`${importData.month.replace('-','년')}월_${window.RateScheme ? window.RateScheme.label+'_' : ''}금리표_${all?'전체':'현재조회'}.png`};
   }
   function wrap(ctx,text,width) {
     const lines=[];let line='';

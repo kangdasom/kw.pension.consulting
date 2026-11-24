@@ -19,6 +19,11 @@
       saved.products[id] = {...values, ...(saved.products[id] || {})};
     }
   }
+  const customerSeed=window.SCHEME_RATE_DATA?.lineupSeed;
+  if(customerSeed){
+    for(const [code,values] of Object.entries(customerSeed.institutions||{}))saved.institutions[code]={...values,...saved.institutions[code]};
+    for(const [id,values] of Object.entries(customerSeed.products||{}))saved.products[id]={...values,...saved.products[id]};
+  }
   // The November source shortens this product's label. Keep its existing lineup.
   // An explicitly saved value on the new key always wins, including a cleared value.
   const previousBonus = saved.products['IL34|1001|보너스 이율'];
@@ -40,7 +45,7 @@
   // Fill absent records only; existing saved choices and other months take priority.
   const confirmedMonth='2026-11';
   const confirmedStatuses={'IL05|1001|':{18:'N'},'IN01|1001|III':{all:'Y'}};
-  for(const [id,values] of Object.entries(confirmedStatuses)){
+  for(const [id,values] of Object.entries(window.RateScheme?.customer?{}:confirmedStatuses)){
     const row=rates.find(r=>r.id===id);if(!row)continue;
     for(const term of Object.keys(row.terms)){
       const value=values[term]||values.all;if(!value)continue;
@@ -59,7 +64,7 @@
       const product = settings.products[row.id] || {};
       row.grade = institution.grade || null;
       row.pension = institution.pension || null;
-      row.lineup = product.lineup || null;
+      row.lineup = product[window.RateScheme?.customer?'dcirpLineup':'lineup'] || null;
       row.proposals = {};
       Object.keys(row.terms).forEach(term => {
         row.proposals[term] = status(settings.months[importData.month]?.[termKey(row.id,term)]?.status);
@@ -122,6 +127,7 @@
   // The browser file-upload UI replaces this legacy disclosure after initialization.
   $('manageImport').onclick=()=>{ $('managementImport').hidden=!$('managementImport').hidden; if(importDisclosure?.tagName==='DETAILS') importDisclosure.open=true; };
   function switchTab(id) {
+    if(window.RateScheme?.customer && id!=='sales')return;
     ['sales','monthly','basic','users'].forEach(name=>{
       $(`panel-${name}`).hidden=name!==id;
       $(`tab-${name}`).setAttribute('aria-selected',String(name===id));
@@ -263,15 +269,17 @@
   let basicMode='institutions';
   function renderBasic(){
     const search=$('basicSearch').value.trim().toLocaleLowerCase();
-    const institutions=[...new Map(rates.map(row=>[row.institutionCode,row])).values()];
-    $('basicHead').innerHTML=basicMode==='institutions'?'<tr><th>기관코드</th><th>기관명</th><th>신용등급</th><th>사업자</th></tr>':'<tr><th>기관명</th><th>상품</th><th>라인업</th></tr>';
-    const rows=(basicMode==='institutions'?institutions:rates).filter(row=>(row.institution+' '+(basicMode==='institutions'?'':row.type)).toLocaleLowerCase().includes(search));
-    $('basicRows').innerHTML=rows.length?rows.map(row=>basicMode==='institutions'?`<tr><td>${escapeHtml(row.institutionCode)}</td><td>${escapeHtml(row.institution)}</td><td>${select(['',...ratingOrder],draft.institutions[row.institutionCode]?.grade,`data-institution="${escapeHtml(row.institutionCode)}" data-field="grade" aria-label="${escapeHtml(row.institution)} 신용등급"`)}</td><td>${select(['','Y','N'],draft.institutions[row.institutionCode]?.pension,`data-institution="${escapeHtml(row.institutionCode)}" data-field="pension" aria-label="${escapeHtml(row.institution)} 사업자"`)}</td></tr>`:`<tr><td>${escapeHtml(row.institution)}</td><td>${escapeHtml(row.type)}</td><td>${select(['','Y','N'],draft.products[row.id]?.lineup,`data-product="${escapeHtml(row.id)}" aria-label="${escapeHtml(row.institution+' '+row.type)} 라인업"`)}</td></tr>`).join(''):`<tr><td colspan="4" class="management-empty">검색 결과가 없습니다.</td></tr>`;
+    const customerProducts=customerSeed?['DC','IRP'].flatMap(plan=>{const sources=window.RateUpload.sources(plan);const latest=Object.keys(sources).sort().at(-1);return sources[latest]?.products||[];}):[];
+    const allProducts=[...new Map([...rates,...customerProducts].map(row=>[row.id,row])).values()];
+    const institutions=[...new Map(allProducts.map(row=>[row.institutionCode,row])).values()];
+    $('basicHead').innerHTML=basicMode==='institutions'?'<tr><th>기관코드</th><th>기관명</th><th>신용등급</th><th>사업자</th></tr>':`<tr><th>기관명</th><th>상품</th><th>${customerSeed?'DB ':''}라인업</th>${customerSeed?'<th>DC·개인IRP 라인업</th>':''}</tr>`;
+    const rows=(basicMode==='institutions'?institutions:allProducts).filter(row=>(row.institution+' '+(basicMode==='institutions'?'':row.type)).toLocaleLowerCase().includes(search));
+    $('basicRows').innerHTML=rows.length?rows.map(row=>basicMode==='institutions'?`<tr><td>${escapeHtml(row.institutionCode)}</td><td>${escapeHtml(row.institution)}</td><td>${select(['',...ratingOrder],draft.institutions[row.institutionCode]?.grade,`data-institution="${escapeHtml(row.institutionCode)}" data-field="grade" aria-label="${escapeHtml(row.institution)} 신용등급"`)}</td><td>${select(['','Y','N'],draft.institutions[row.institutionCode]?.pension,`data-institution="${escapeHtml(row.institutionCode)}" data-field="pension" aria-label="${escapeHtml(row.institution)} 사업자"`)}</td></tr>`:`<tr><td>${escapeHtml(row.institution)}</td><td>${escapeHtml(row.type)}</td><td>${select(['','Y','N'],draft.products[row.id]?.lineup,`data-product="${escapeHtml(row.id)}" data-field="lineup" aria-label="${escapeHtml(row.institution+' '+row.type)} DB 라인업"`)}</td>${customerSeed?`<td>${select(['','Y','N'],draft.products[row.id]?.dcirpLineup,`data-product="${escapeHtml(row.id)}" data-field="dcirpLineup" aria-label="${escapeHtml(row.institution+' '+row.type)} DC·개인IRP 라인업"`)}</td>`:''}</tr>`).join(''):`<tr><td colspan="4" class="management-empty">검색 결과가 없습니다.</td></tr>`;
   }
   $('basicRows').onchange=event=>{
     const target=event.target;
     if(target.dataset.institution){const item=draft.institutions[target.dataset.institution] ||= {};item[target.dataset.field]=target.value;}
-    if(target.dataset.product){draft.products[target.dataset.product]={lineup:target.value};}
+    if(target.dataset.product){const item=draft.products[target.dataset.product] ||= {};item[target.dataset.field||'lineup']=target.value;}
     updateDirty();renderMonthly();
   };
   ['Institutions','Lineups'].forEach((name,i)=>$('show'+name).onclick=()=>{basicMode=i?'lineups':'institutions';$('showInstitutions').setAttribute('aria-pressed',String(!i));$('showLineups').setAttribute('aria-pressed',String(!!i));renderBasic();});

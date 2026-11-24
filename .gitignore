@@ -46,3 +46,6 @@
 credentials*.json
 secrets*.json
 node_modules/
+
+!/scripts/check-schemes.cjs
+!/scripts/check-schemes-ui.cjs

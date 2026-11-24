@@ -69,6 +69,7 @@
     $('uploadResult').hidden=false;
     const s=r.snapshot;
     $('uploadResult').innerHTML=`${s?`<p class="upload-summary"><strong>${esc(s.month)} · ${s.products.length}개 상품 / ${s.acceptedTerms}개 금리 반영 예정</strong><br>${esc(s.start)} ~ ${esc(s.end)} · ${esc(s.sheet)}</p>`:''}
+      ${r.plans?`<section class="upload-plan-summary"><h3>제도별 검증 결과</h3>${['DB','DC','IRP'].map(plan=>{const p=r.plans[plan],data=p?.snapshot;return `<p>${plan==='IRP'?'개인IRP':plan} · ${data?`${data.products.length}개 상품 / ${data.acceptedTerms}개 금리 · 디폴트옵션 ${data.defaultOptionExcluded}행 제외`:'반영 불가'}</p>${p&&plan!=='DB'&&(p.matching.length||p.issues.length)?issueTable([...p.matching,...p.issues]):''}`;}).join('')}<p>세 제도 금리를 함께 반영합니다. DC·개인IRP 라인업은 별도로 유지하며 제안가능·한도는 관리하지 않습니다.</p></section>`:''}
       ${r.fatal.length?`<p class="upload-error">${r.fatal.map(esc).join('<br>')}</p>`:''}
       ${r.comparisons.length?`<section id="uploadTrend" aria-labelledby="trendTitle"><h3 id="trendTitle">금리 동향 · 금리 비교표</h3>
         <div class="trend-controls" role="group" aria-label="비교 상품유형"><span>상품유형</span>${trendGroups.map(g=>`<button type="button" data-trend-group="${g}" aria-pressed="false">${g}</button>`).join('')}</div>
@@ -86,7 +87,7 @@
   }
   $('uploadValidate').onclick=()=>{
     invalidate();if(!rows)return;try{
-    const s=api.sources();result=api.validate(rows,{source:$('uploadFile').files[0].name,sheet:workbook.sheets[Number($('uploadSheet').value)].name,date1904:workbook.date1904,period:$('uploadPeriod').value,history:s});display(result);
+    const s=api.sources();result=api.validateAll(rows,{source:$('uploadFile').files[0].name,sheet:workbook.sheets[Number($('uploadSheet').value)].name,date1904:workbook.date1904,period:$('uploadPeriod').value,history:s});display(result);
     }catch(e){failure(e);}
   };
   function close(){backdrop.hidden=true;document.body.style.overflow=previousOverflow;$('uploadApply').focus();}
@@ -99,9 +100,10 @@
   $('uploadApply').onclick=()=>{
     if(!result?.snapshot)return;
     const r=result,s=r.snapshot,replacing=!!api.sources()[s.month];
-    const warnings=[...r.matching,...r.issues].map(i=>`${i.row}행 · ${i.message}`);
+    const warnings=r.plans?Object.entries(r.plans).flatMap(([plan,p])=>[...p.matching,...p.issues].map(i=>`${plan} ${i.row}행 · ${i.message}`)):[...r.matching,...r.issues].map(i=>`${i.row}행 · ${i.message}`);
     $('uploadConfirmBody').innerHTML=`<p><strong>${esc(s.month)} 금리 ${s.acceptedTerms}건을 ${replacing?'교체':'반영'}할까요?</strong></p><p>${esc(s.start)} ~ ${esc(s.end)} · ${s.products.length}개 상품</p>
       <p>기관 매칭 제외 ${r.matching.length}건 · 데이터 확인 ${r.issues.length}건</p>
+      ${r.plans?'<p>'+['DB','DC','IRP'].map(plan=>`${plan==='IRP'?'개인IRP':plan} ${r.plans[plan]?.snapshot?.acceptedTerms||0}개 금리`).join(' · ')+'를 함께 반영합니다.</p>':''}
       ${warnings.length?'<p class="upload-error">아래 확인사항이 있습니다. 제외된 행은 반영되지 않습니다. 이 내용대로 반영하시겠습니까?</p>':''}
       ${warnings.length?`<ul>${warnings.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
       <p>${r.newProducts.length}개 신규 상품의 라인업은 미설정입니다.</p>
@@ -114,7 +116,8 @@
     const button=$('uploadConfirm');button.disabled=true;
     try{
       const snapshot=JSON.parse(JSON.stringify(result.snapshot));
-      api.commit(snapshot);window.RateManagement.applySource(snapshot);active();
+      const companions=result.plans?Object.fromEntries(Object.entries(result.plans).map(([plan,p])=>[plan,p.snapshot])):{};
+      api.commit(snapshot,companions);window.RateManagement.applySource(snapshot);active();
       close();$('uploadComplete').hidden=false;$('uploadCompleteText').textContent=`${snapshot.month} 금리 반영 완료 · ${snapshot.products.length}개 상품 / ${snapshot.acceptedTerms}개 금리. 제안가능·한도 확인은 별도로 진행하세요.`;
       $('uploadApply').hidden=true;$('uploadResult').hidden=true;$('uploadMessage').textContent='';result=null;
       $('uploadViewSales').focus();

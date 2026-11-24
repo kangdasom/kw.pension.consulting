@@ -1,0 +1,35 @@
+/* Landing design approved in the conversation; no explanatory plan subtitles. */
+html:not([data-plan]) .app-shell{visibility:hidden}
+.scheme-entry{display:none}
+html[data-plan=ENTRY] .app-shell{display:none!important}
+html[data-plan=ENTRY] .scheme-entry{display:block}
+.scheme-entry{max-width:520px;margin:24px auto;background:#fff;border:1px solid #e2e2eb;border-radius:12px;overflow:hidden;color:#20234f}
+.entry-header{min-height:78px;padding:10px 25px;display:flex;align-items:center;border-bottom:2px solid #e92879}
+.entry-header img{display:block;width:216px;max-width:100%;height:auto}
+.entry-content{padding:32px 30px 34px;max-width:436px;margin:auto}
+.entry-month{display:block;font-size:12px;font-weight:500;margin:0 0 9px}
+.entry-content h1{margin:0;font-size:25px;line-height:1.35;letter-spacing:-.06em;color:#20234f}
+.entry-period{margin:10px 0 0;font-size:11px;color:#777984;letter-spacing:-.015em}
+.entry-label{margin:27px 0 10px;font-size:12px;color:#777984}
+.entry-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.entry-plans a{display:flex;align-items:center;justify-content:center;min-width:0;min-height:58px;padding:12px 6px;border:1px solid #e2e2eb;border-radius:6px;background:#fff;color:#20234f;text-decoration:none;font-size:22px;font-weight:700;letter-spacing:-.035em;white-space:nowrap}
+.entry-plans a:last-child{font-size:19px}
+.entry-plans a:hover{border-color:#e92879;background:#fff6fa}
+.entry-plans a:focus-visible,.scheme-home:focus-visible{outline:2px solid #db2976;outline-offset:3px}
+.scheme-utilities{display:flex;flex-direction:column;align-items:flex-end;flex:none;gap:0;order:2}
+.topbar .scheme-utilities .view-mode-button{font-size:10px;min-height:24px;padding:3px 7px}
+.scheme-home{display:flex;align-items:center;min-height:34px;color:#20234f;font-size:12px;font-weight:650;text-decoration:none;white-space:nowrap}
+.scheme-home:hover{color:#e92879;text-decoration:underline;text-underline-offset:4px}
+.customer-mode .main-tabs,.customer-mode #panel-monthly,.customer-mode #panel-basic,.customer-mode #panel-users,.customer-mode .import-disclosure{display:none!important}
+.customer-mode .ranking-filters label:has(#rankingProposal){display:none!important}
+@media(max-width:420px){
+ .scheme-entry{margin:14px 8px}
+ .entry-header{padding-inline:20px}
+ .entry-content{padding:29px 22px 30px}
+ .entry-content h1{font-size:23px}
+ .entry-plans a{font-size:21px}
+ .entry-plans a:last-child{font-size:18px}
+ .scheme-home{font-size:11px}
+}
+@media(max-width:350px){.entry-content{padding-inline:18px}.entry-plans{gap:7px}.entry-plans a:last-child{font-size:17px}}
+@media(pointer:coarse){.scheme-home{min-height:44px}.topbar:has(.scheme-utilities){height:86px!important}}

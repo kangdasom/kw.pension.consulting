@@ -13,7 +13,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT || 'playwright');
    if(name.includes('..'))return route.abort();
    return route.fulfill({path:path.join(root,name),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.woff2')?'font/woff2':name.endsWith('.json')?'application/json':'text/html'});
   });
-  await page.goto('http://rates.test/');await page.evaluate(()=>document.fonts.ready);
+  await page.goto('http://rates.test/?plan=db');await page.evaluate(()=>document.fonts.ready);
   const before=await page.evaluate(()=>JSON.stringify({storage:{...localStorage},rows:RateExport.snapshot('current').rows}));
   await page.locator('#tab-users').click();assert(await page.locator('#panel-users').isVisible());
   assert(!/초안|예정|준비중/.test(await page.locator('#panel-users').innerText()));

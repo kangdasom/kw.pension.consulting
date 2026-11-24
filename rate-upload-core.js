@@ -22,17 +22,33 @@
     return s&&date(s.start)===s.start&&date(s.end)===s.end&&s.start<=s.end&&s.month===s.start.slice(0,7)&&
       Array.isArray(s.products)&&s.products.length>0&&s.products.every(p=>typeof p.id==='string'&&typeof p.institutionCode==='string'&&typeof p.institution==='string'&&p.terms&&Object.values(p.terms).length&&Object.values(p.terms).every(t=>Number.isFinite(t.rate)&&t.rate>0));
   }
-  function read(){const raw=localStorage.getItem(key);if(!raw)return {activeMonth:null,months:{}};const s=JSON.parse(raw);if(!s||!s.months||!Object.values(s.months).every(validSnapshot)||s.activeMonth&&!s.months[s.activeMonth])throw Error('저장된 금리 자료를 읽을 수 없습니다. 기존 저장정보를 확인해 주세요.');return s;}
-  const bundled=clone(window.RATE_IMPORT);
+  const plan=window.RateScheme?.id||'DB';
+  const bundledSources=window.RateScheme?.bundled||{DB:clone(window.RATE_IMPORT)};
+  const bundled=clone(bundledSources[plan]);
+  function readAll(){
+    const raw=localStorage.getItem(key);if(!raw)return {activeMonth:null,months:{}};
+    const s=JSON.parse(raw);
+    const valid=state=>state&&state.months&&Object.values(state.months).every(validSnapshot)&&(!state.activeMonth||state.months[state.activeMonth]);
+    if(!valid(s)||s.customerPlans&&Object.values(s.customerPlans).some(p=>!valid(p)))throw Error('저장된 금리 자료를 읽을 수 없습니다. 기존 저장정보를 확인해 주세요.');
+    return s;
+  }
+  function read(selected=plan){const state=readAll();return selected==='DB'?state:state.customerPlans?.[selected]||{activeMonth:null,months:{}};}
   let storeWarning='';
   try{const s=read();if(s.activeMonth)window.RATE_IMPORT=clone(s.months[s.activeMonth]);}catch(e){storeWarning=e.message;}
-  function sources(){const s=read();return {...{[bundled.month]:bundled},...s.months};}
-  function commit(snapshot){
+  function sources(selected=plan){const s=read(selected),source=bundledSources[selected];return {...(source?{[source.month]:source}:{}),...s.months};}
+  function commit(snapshot,companions={}){
     if(!validSnapshot(snapshot))throw Error('반영 가능한 금리 자료가 없습니다. 검증을 다시 실행하세요.');
-    const state=read();
-    state.months[bundled.month] ||= clone(bundled);
-    state.months[window.RATE_IMPORT.month]=clone(window.RATE_IMPORT);
-    state.months[snapshot.month]=clone(snapshot);state.activeMonth=snapshot.month;
+    const state=readAll();
+    const update=(selected,next)=>{
+      if(!validSnapshot(next))throw Error(selected+' 반영 가능한 금리 자료가 없습니다.');
+      const target=selected==='DB'?state:((state.customerPlans ||= {})[selected] ||= {activeMonth:null,months:{}});
+      const initial=bundledSources[selected];
+      if(initial)target.months[initial.month] ||= clone(initial);
+      if(selected===plan)target.months[window.RATE_IMPORT.month]=clone(window.RATE_IMPORT);
+      target.months[next.month]=clone(next);target.activeMonth=next.month;
+    };
+    update(snapshot.scheme||plan,snapshot);
+    for(const [selected,next] of Object.entries(companions))if(selected!==(snapshot.scheme||plan))update(selected,next);
     // One setItem: quota/security failures leave the active data and all previous months intact.
     localStorage.setItem(key,JSON.stringify(state));
   }
@@ -41,17 +57,22 @@
     for(const {values:v} of rows){const a=date(v.B,date1904),b=date(v.C,date1904);if(a&&b&&a<=b){const k=a+'|'+b;map.set(k,(map.get(k)||0)+1);}}
     return [...map].sort((a,b)=>b[1]-a[1]).map(([key,count])=>({key,count,start:key.split('|')[0],end:key.split('|')[1]}));
   }
-  function validate(rows,{source='',sheet='',date1904=false,period=null,history=sources()}={}){
+  function validate(rows,{source='',sheet='',date1904=false,period=null,scheme=plan,history=null}={}){
+    history ||= sources(scheme);
+    const initial=bundledSources[scheme]||bundled;
+    const column=rows.rateColumns?.[scheme]||({DB:'J',DC:'K',IRP:'M'})[scheme];
     const choices=periods(rows,date1904);
     const result={fatal:[],issues:[],matching:[],comparisons:[],newProducts:[],missingProducts:[],choices,snapshot:null};
     if(!choices.length){result.fatal.push('유효한 적용기간을 찾을 수 없습니다. B·C열의 날짜 형식을 확인하세요.');return result;}
     const chosen=choices.find(p=>p.key===period)||choices[0];
     const known=new Map();
-    for(const data of [bundled,...Object.values(history)])for(const p of data.products){const item=known.get(p.institutionCode)||{name:p.institution,names:new Set()};item.names.add(normalize(p.institution));known.set(p.institutionCode,item);}
-    const products=new Map(),seen=new Map();let zero=0,unsupported=0,short=0;
+    for(const data of [...Object.values(bundledSources),...Object.values(history)])for(const p of data.products){const item=known.get(p.institutionCode)||{name:p.institution,names:new Set()};item.names.add(normalize(p.institution));known.set(p.institutionCode,item);}
+    const products=new Map(),seen=new Map();let zero=0,unsupported=0,short=0,defaultOption=0;
     const issue=(row,message)=>result.issues.push({row,message});
     for(const {number:row,values:v,formulas=[]} of rows){
-      if(String(v.J??'').trim()!==''&&Number(v.J)===0){zero++;continue;}
+      if(['Y','1','TRUE'].includes(normalize(v.G))){defaultOption++;continue;}
+      const rawRate=v[column];
+      if(String(rawRate??'').trim()!==''&&Number(rawRate)===0){zero++;continue;}
       const productCode=String(v.F??'').split(':')[0].trim();
       if(!types[productCode]){if(/^\d{4}:/.test(String(v.F??''))){unsupported++;continue;}issue(row,'상품 상세분류를 읽을 수 없어 제외했습니다.');continue;}
       const institution=String(v.D??'').trim().match(/^([A-Za-z0-9]{4}):\s*(.+)$/);
@@ -60,10 +81,10 @@
       if(!match||!match.names.has(normalize(name))){result.matching.push({row,message:`${code} · ${name}: ${!match?'등록된 기관이 없어 제외했습니다.':`기관명이 등록 정보(${match.name})와 달라 제외했습니다.`}`});continue;}
       const start=date(v.B,date1904),end=date(v.C,date1904);
       if(start!==chosen.start||end!==chosen.end){issue(row,'선택한 적용기간과 다르거나 날짜가 잘못되어 제외했습니다.');continue;}
-      if(formulas.some(c=>['B','C','D','F','H','I','J'].includes(c))){issue(row,'수식의 계산 결과를 사용합니다. 엑셀에서 재계산·저장된 값인지 확인하세요.');}
-      const months=Number(v.H),rate=Number(v.J);
+      if(formulas.some(c=>['B','C','D','F','G','H','I',column].includes(c))){issue(row,'수식의 계산 결과를 사용합니다. 엑셀에서 재계산·저장된 값인지 확인하세요.');}
+      const months=Number(v.H),rate=Number(rawRate);
       if(!Number.isInteger(months)||months<=0||months>1200){issue(row,'계약기간이 올바른 개월 수가 아니어서 제외했습니다.');continue;}
-      if(String(v.J??'').trim()===''||!Number.isFinite(rate)||rate<0){issue(row,'DB금리가 숫자가 아니거나 음수여서 제외했습니다.');continue;}
+      if(String(rawRate??'').trim()===''||!Number.isFinite(rate)||rate<0){issue(row,(scheme==='IRP'?'개인IRP':scheme)+'금리가 숫자가 아니거나 음수여서 제외했습니다.');continue;}
       const note=String(v.I??'').normalize('NFKC').trim();
       const id=`${code}|${productCode}|${note}`,termKey=id+'|'+months;
       if(seen.has(termKey)){issue(row,`상품·만기 중복으로 제외했습니다. ${seen.get(termKey)}행의 금리를 유지합니다.`);continue;}
@@ -74,7 +95,7 @@
       if(months>=3&&months<=9)short++;
     }
     const list=[...products.values()],month=chosen.start.slice(0,7),same=history[month],previous=history[previousMonth(month)];
-    const baseline=same||previous||window.RATE_IMPORT;
+    const baseline=same||previous||initial;
     const oldIds=new Set(baseline.products.map(p=>p.id));
     result.newProducts=list.filter(p=>!oldIds.has(p.id));
     result.missingProducts=baseline.products.filter(p=>!products.has(p.id));
@@ -93,8 +114,20 @@
       return {...g,average,rows:g.rows.map((r,i)=>{if(!i||r.rate!==g.rows[i-1].rate)rank=i+1;return {...r,rank,spreadBp:(r.rate-average)*100};})};
     });
     if(!list.length){result.fatal.push('반영 가능한 금리가 없습니다. 기관 매칭과 데이터 내용을 수정해 주세요.');return result;}
-    result.snapshot={source,sheet,start:chosen.start,end:chosen.end,month,totalRows:rows.length,zeroExcluded:zero,unsupportedExcluded:unsupported,shortHidden:short,acceptedTerms:seen.size,products:list,uploadedAt:new Date().toISOString()};
+    result.snapshot={scheme,source,sheet,start:chosen.start,end:chosen.end,month,totalRows:rows.length,zeroExcluded:zero,defaultOptionExcluded:defaultOption,unsupportedExcluded:unsupported,shortHidden:short,acceptedTerms:seen.size,products:list,uploadedAt:new Date().toISOString()};
     return result;
   }
-  window.RateUpload={date,previousMonth,validSnapshot,read,sources,commit,periods,validate,storeWarning};
+  function validateAll(rows,options={}){
+    const result=validate(rows,{...options,scheme:'DB'}),results={};
+    if(!window.RateScheme)return result;
+    for(const scheme of ['DC','IRP']){
+      if(!rows.rateColumns?.[scheme]){result.fatal.push((scheme==='IRP'?'개인IRP':scheme)+' 금리 열을 찾을 수 없습니다.');continue;}
+      const next=validate(rows,{...options,scheme,history:sources(scheme)});results[scheme]=next;
+      result.fatal.push(...next.fatal.map(message=>scheme+' · '+message));
+    }
+    results.DB={...result};
+    result.plans=results;
+    return result;
+  }
+  window.RateUpload={date,previousMonth,validSnapshot,read,sources,commit,periods,validate,validateAll,storeWarning};
 })();

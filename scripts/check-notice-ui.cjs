@@ -20,7 +20,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
  try{
   const ctx=await context(),page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
   await page.addInitScript(()=>localStorage.setItem('db-rate-notice-v1','이전 공지'));
-  await page.goto('https://kangdasom.github.io/kw.pension.consulting/');await page.waitForFunction(()=>!document.getElementById('noticeSave').disabled);
+  await page.goto('https://kangdasom.github.io/kw.pension.consulting/?plan=db');await page.waitForFunction(()=>!document.getElementById('noticeSave').disabled);
   assert.equal(await page.locator('#noticeCredential').count(),0);
   await page.locator('#tab-monthly').click();await page.locator('#noticeLegacy').click();assert.equal(await page.locator('#noticeText').inputValue(),'이전 공지');
   const text='모든 방문자 공지\n<em>문자 그대로</em> 😀';await page.locator('#noticeText').fill(text);
@@ -32,7 +32,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   live={...payload.notice,updatedAt:new Date().toISOString()};source={...live};
   await page.waitForFunction(()=>document.getElementById('noticeMessage').textContent.includes('배포가 완료'),{},{timeout:12000});
   assert.equal(await page.locator('#noticeBannerText').textContent(),text);assert.equal(await page.locator('#noticeBannerText em').count(),0);
-  const other=await context(),visitor=await other.newPage();await visitor.goto('https://kangdasom.github.io/kw.pension.consulting/');
+  const other=await context(),visitor=await other.newPage();await visitor.goto('https://kangdasom.github.io/kw.pension.consulting/?plan=db');
   await visitor.waitForFunction(()=>document.getElementById('noticeBannerText').textContent.includes('모든'));assert.equal(await visitor.locator('#noticeBannerText').textContent(),text);
   await page.locator('#noticeText').fill('가'.repeat(3000));await page.locator('#noticeSave').click();assert(await page.locator('#noticeCopyRequest').isVisible());
   assert.equal(JSON.parse(await page.locator('#noticeRequestBody').inputValue()).notice.text.length,3000);

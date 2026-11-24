@@ -18,7 +18,7 @@ function effectiveRate(row,index=0){
 }
 function displayRate(row,index){
   const term = row.terms[maturities[index]];
-  if(!term) return '<span class="missing" title="해당 만기 DB금리 없음">—</span>';
+  if(!term) return '<span class="missing" title="해당 만기 금리 없음">—</span>';
   const value = term.rate.toFixed(2);
   return row.category === '보험' ? `<span>${value} <small>(${effectiveRate(row,index).toFixed(2)})</small></span>` : value;
 }
@@ -60,6 +60,7 @@ function proposalMatches(state,filter=els.proposalFilter.value){
 function salesRateCell(row,index,filter=els.proposalFilter.value){
   const months=maturities[index],term=row.terms[months];
   if(!term)return displayRate(row,index);
+  if(window.RateScheme?.customer)return displayRate(row,index);
   const state=termProposalState(row,months),filtered=filter!=='all';
   const dim=filtered&&state!=='확인'&&!proposalMatches(state,filter);
   const dot=filtered&&state==='확인';
@@ -99,7 +100,8 @@ els.lineupFilter.value='Y'; els.proposalFilter.value='all';
 els.sortFilter.value='rate';
 document.getElementById('maturitySort').value='0';
 const heading = document.querySelector('.page-heading');
-heading.querySelector('h1').textContent=`${monthLabel} 원리금보장상품 금리`;
+function ratePageTitle(){return `${monthLabel} ${window.RateScheme ? window.RateScheme.label+' ' : ''}원리금보장상품 금리`;}
+heading.querySelector('h1').textContent=ratePageTitle();
 document.title = '퇴직연금 원리금보장상품 금리표';
 heading.querySelector('p').textContent=`적용기간 : ${importData.start.replaceAll('-','.')} ~ ${importData.end.replaceAll('-','.')}`;
 document.querySelector('.table-meta').textContent=`원본 엑셀 · DB금리 · ${importData.acceptedTerms}개 상품·만기 / ${rates.length}개 상품`;
@@ -111,7 +113,7 @@ function showAllSource(){ els.lineupFilter.value='all'; els.proposalFilter.value
 function activateRateSource(next){
   importData=next;rates=next.products;window.RATE_IMPORT=next;
   monthLabel=next.month.replace(/^(\d{4})-0?(\d+)$/, '$1년 $2월');
-  heading.querySelector('h1').textContent=`${monthLabel} 원리금보장상품 금리`;
+  heading.querySelector('h1').textContent=ratePageTitle();
   document.title='퇴직연금 원리금보장상품 금리표';
   heading.querySelector('p').textContent=`적용기간 : ${next.start.replaceAll('-','.')} ~ ${next.end.replaceAll('-','.')}`;
   document.querySelector('.table-meta').textContent=`원본 엑셀 · DB금리 · ${next.acceptedTerms}개 상품·만기 / ${rates.length}개 상품`;

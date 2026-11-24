@@ -29,6 +29,7 @@ jobs:
           node scripts/check-rate-export-ui.cjs
           node scripts/check-rate-upload.cjs
           node scripts/check-notice-publish.cjs
+          node scripts/check-schemes.cjs
       - name: Prepare static files and check paths
         run: node scripts/prepare-pages.cjs --audit-tracked
       - uses: actions/upload-pages-artifact@v4

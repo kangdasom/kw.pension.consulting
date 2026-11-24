@@ -9,7 +9,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
    await page.route('http://rates.test/**',route=>{const name=new URL(route.request().url()).pathname.slice(1)||'index.html';return route.fulfill({path:path.join(root,name),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.woff2')?'font/woff2':name.endsWith('.json')?'application/json':'text/html'});});
    await page.route('https://kangdasom.github.io/kw.pension.consulting/notice.json*',route=>route.fulfill({path:path.join(root,'notice.json'),contentType:'application/json'}));
   }
-  await page.goto(live?'https://kangdasom.github.io/kw.pension.consulting/':'http://rates.test/');await page.evaluate(()=>document.fonts.ready);
+  await page.goto((live?'https://kangdasom.github.io/kw.pension.consulting/':'http://rates.test/')+'?plan=db');await page.evaluate(()=>document.fonts.ready);
   const before=await page.evaluate(()=>({data:JSON.stringify(window.RATE_IMPORT),storage:JSON.stringify({...localStorage})}));
   await page.evaluate(()=>{els.ratingFilter.value='AA+';els.sortFilter.value='rating';render();});
   const full=await page.evaluate(()=>JSON.stringify(RateExport.snapshot('current',new Date('2026-11-13T00:00:00Z'))));
