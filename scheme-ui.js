@@ -3,17 +3,24 @@
   const scheme=window.RateScheme;
   const entry=document.getElementById('schemeEntry');
   const month=importData.month.replace(/^(\d{4})-0?(\d+)$/, '$1년 $2월');
-  entry.querySelector('.entry-month').textContent=month;
-  entry.querySelector('.entry-period').textContent='적용기간 : '+importData.start.replaceAll('-','.')+' ~ '+importData.end.replaceAll('-','.');
+  if(entry){
+    entry.querySelector('.entry-month').textContent=month;
+    entry.querySelector('.entry-period').textContent='적용기간 : '+importData.start.replaceAll('-','.')+' ~ '+importData.end.replaceAll('-','.');
+  }
   if(scheme.entry){
     document.title='퇴직연금 원리금보장상품 금리표 · 제도 선택';
     document.querySelector('.app-shell').setAttribute('inert','');
-  }else entry.setAttribute('inert','');
+  }else entry?.setAttribute('inert','');
   const view=document.getElementById('viewModeButton');
   const utilities=document.createElement('div');utilities.className='scheme-utilities';
-  const link=document.createElement('a');link.href='index.html';link.className='scheme-home';link.textContent='← 제도 선택';
-  link.setAttribute('aria-label','제도 선택 화면으로 이동');
+  const link=document.createElement('a');link.href='index.html';link.className='scheme-home';link.textContent=scheme.admin?'← 메인':'← 제도 선택';
+  link.setAttribute('aria-label',scheme.admin?'메인 진입페이지로 이동':'제도 선택 화면으로 이동');
   view.before(utilities);utilities.append(link,view);
+  if(scheme.admin){
+    document.body.classList.add('admin-mode');document.title='퇴직연금 관리자페이지';
+    const heading=document.createElement('header');heading.className='admin-route-title';heading.innerHTML='<h1>관리자페이지</h1>';
+    document.querySelector('.main-tabs').before(heading);
+  }
   if(scheme.customer){
     document.body.classList.add('customer-mode');
     document.querySelectorAll('#proposalFilter,#rankingProposal').forEach(control=>{control.value='all';control.closest('label').hidden=true;});

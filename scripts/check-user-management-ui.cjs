@@ -13,7 +13,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT || 'playwright');
    if(name.includes('..'))return route.abort();
    return route.fulfill({path:path.join(root,name),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.woff2')?'font/woff2':name.endsWith('.json')?'application/json':'text/html'});
   });
-  await page.goto('http://rates.test/?plan=db');await page.evaluate(()=>document.fonts.ready);
+  await page.goto('http://rates.test/admin.html');await page.evaluate(()=>document.fonts.ready);
   const before=await page.evaluate(()=>JSON.stringify({storage:{...localStorage},rows:RateExport.snapshot('current').rows}));
   await page.locator('#tab-users').click();assert(await page.locator('#panel-users').isVisible());
   assert(!/초안|예정|준비중/.test(await page.locator('#panel-users').innerText()));
@@ -39,10 +39,10 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT || 'playwright');
    await page.locator('#userAdd').click();assert(await page.locator('#userName').isVisible());await page.screenshot({path:path.join(out,`${width}-form.png`)});await page.locator('#userCancel').click();
    await page.screenshot({path:path.join(out,`${width}-table.png`)});
   }
-  await page.locator('#tab-users').focus();await page.keyboard.press('Home');assert(await page.locator('#panel-sales').isVisible());await page.keyboard.press('End');assert(await page.locator('#panel-users').isVisible());
+  await page.locator('#tab-users').focus();await page.keyboard.press('Home');assert(await page.locator('#panel-monthly').isVisible());await page.keyboard.press('End');assert(await page.locator('#panel-users').isVisible());
   const after=await page.evaluate(()=>{const storage={...localStorage};delete storage['db-rate-user-drafts-v1'];return JSON.stringify({storage,rows:RateExport.snapshot('current').rows});});assert.equal(after,before);
   await page.getByRole('button',{name:'삭제',exact:true}).first().click();assert.equal(await page.locator('#userRows tr').count(),1);
-  assert.deepEqual(errors,[]);console.log('PASS: four tabs, draft-only create/edit/stop/delete, duplicates, filters, reload, safe text, failed storage retry, keyboard navigation, rate/storage isolation, 320/390/768/1366 layouts.');
+  assert.deepEqual(errors,[]);console.log('PASS: separate admin page with three tabs, draft-only create/edit/stop/delete, duplicates, filters, reload, safe text, failed storage retry, keyboard navigation, rate/storage isolation, 320/390/768/1366 layouts.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
 

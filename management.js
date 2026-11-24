@@ -73,11 +73,24 @@
   }
   applySettings(saved);
   const shell = document.querySelector('.app-shell');
+  // Public rate pages apply shared settings but do not construct management UI.
+  if(window.RateScheme && !window.RateScheme.admin){
+    const sales=document.createElement('section');sales.id='panel-sales';
+    sales.setAttribute('role','region');sales.setAttribute('aria-label','금리표 조회');
+    const children=[...shell.children].filter(child=>!child.classList.contains('topbar')&&!child.classList.contains('work-in-progress'));
+    shell.append(sales);children.forEach(child=>sales.append(child));
+    sales.querySelector('.import-disclosure')?.remove();
+    window.RateManagement={hasUnsaved:()=>false,switchTab(id){if(id!=='sales')location.href='admin.html#'+id;},applySource(next){activateRateSource(next);applySettings(saved);render();}};
+    render();return;
+  }
+  const adminRoute=Boolean(window.RateScheme?.admin);
   const nav = document.createElement('div');
   nav.className = 'main-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','금리표 및 상품 관리');
-  nav.innerHTML = [['sales','금리조회'],['monthly','금리·한도관리'],['basic','기관정보'],['users','사용자관리']].map(([id,label],i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
+  const tabs=[...(adminRoute?[]:[['sales','금리조회']]),['monthly','금리·한도관리'],['basic','기관정보'],['users','사용자관리']];
+  nav.innerHTML = tabs.map(([id,label],i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
   const sales = document.createElement('section');
-  sales.id = 'panel-sales'; sales.setAttribute('role','tabpanel'); sales.setAttribute('aria-labelledby','tab-sales');
+  sales.id = 'panel-sales'; sales.setAttribute('role',adminRoute?'region':'tabpanel');
+  if(!adminRoute)sales.setAttribute('aria-labelledby','tab-sales');
   const children = [...shell.children].filter(child => !child.classList.contains('topbar') && !child.classList.contains('work-in-progress'));
   shell.append(nav, sales); children.forEach(child => sales.append(child));
   const admin = document.createElement('section');
@@ -127,11 +140,12 @@
   // The browser file-upload UI replaces this legacy disclosure after initialization.
   $('manageImport').onclick=()=>{ $('managementImport').hidden=!$('managementImport').hidden; if(importDisclosure?.tagName==='DETAILS') importDisclosure.open=true; };
   function switchTab(id) {
+    if(adminRoute && id==='sales'){location.href='index.html?plan=db';return;}
     if(window.RateScheme?.customer && id!=='sales')return;
     ['sales','monthly','basic','users'].forEach(name=>{
       $(`panel-${name}`).hidden=name!==id;
-      $(`tab-${name}`).setAttribute('aria-selected',String(name===id));
-      $(`tab-${name}`).tabIndex=name===id?0:-1;
+      const button=$(`tab-${name}`);
+      if(button){button.setAttribute('aria-selected',String(name===id));button.tabIndex=name===id?0:-1;}
     });
     shell.classList.toggle('management-active',id!=='sales');
     shell.classList.toggle('monthly-active',id==='monthly');
@@ -327,4 +341,5 @@
     }
   };
   renderMonthly();renderBasic();updateDirty();render();
+  if(adminRoute){const tab=location.hash.slice(1);switchTab(['monthly','basic','users'].includes(tab)?tab:'monthly');}
 })();

@@ -55,17 +55,18 @@
       <link rel="stylesheet" href="rate-upload.css" />
       <link rel="stylesheet" href="sales-ranking.css?v=20261113-pink-toast" />
       <link rel="stylesheet" href="design-refresh.css?v=20261112-work-in-progress" />
-      <link rel="stylesheet" href="scheme-ui.css?v=20261124-title" />
+      <link rel="stylesheet" href="scheme-ui.css?v=20261124-admin" />
   </head>
   <body>
     <main class="scheme-entry" id="schemeEntry" aria-label="제도 선택">
       <header class="entry-header"><img src="export-brand.png" alt="키움증권 퇴직연금"></header>
       <section class="entry-content">
         <p class="entry-month">2026년 11월</p>
-        <h1>원리금보장상품 금리</h1>
+        <h1>원리금보장상품 공시금리</h1>
         <p class="entry-period">적용기간 : 2026.11.01 ~ 2026.11.30</p>
         <p class="entry-label">제도 선택</p>
         <nav class="entry-plans" aria-label="제도별 금리표"><a href="index.html?plan=db">DB</a><a href="index.html?plan=dc">DC</a><a href="index.html?plan=irp">개인IRP</a></nav>
+        <div class="entry-admin"><a class="entry-admin-link" href="admin.html">관리자페이지 <span aria-hidden="true">→</span></a></div>
       </section>
     </main>
     <noscript>금리표를 조회하려면 브라우저의 JavaScript를 활성화해주세요.</noscript>
@@ -202,24 +203,20 @@
 
     <script src="rates-data.js"></script>
     <script src="scheme-rates-data.js"></script>
-    <script src="scheme-config.js?v=20261124"></script>
+    <script src="scheme-config.js?v=20261124-admin"></script>
     <script src="rate-upload-core.js?v=20261124-schemes"></script>
     <script src="rate-model.js?v=20261124-title"></script>
     <script src="app.js?v=20261124-schemes"></script>
     <script src="basic-settings-data.js"></script>
     <script src="pension-providers-data.js"></script>
-    <link rel="stylesheet" href="user-management.css" />
-    <script src="management.js?v=20261124-schemes"></script>
-    <script src="user-management.js"></script>
+    <script src="management.js?v=20261124-admin"></script>
     <script src="notice-publish.js"></script>
-    <script src="notice-ui.js"></script>
-    <script src="rate-xlsx.js?v=20261124-schemes"></script>
-    <script src="rate-upload-ui.js?v=20261124-schemes"></script>
+    <script src="notice-ui.js?v=20261124-admin"></script>
     <script src="sales-ranking.js?v=20261113-empty"></script>
     <script src="rate-export.js?v=20261124-title"></script>
     <script src="rate-export-ui.js"></script>
     <script src="rate-scroll.js?v=20261113-multi"></script>
-    <script src="scheme-ui.js?v=20261124"></script>
+    <script src="scheme-ui.js?v=20261124-admin"></script>
   </body>
 </html>
 

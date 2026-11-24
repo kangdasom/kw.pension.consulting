@@ -15,12 +15,17 @@ html[data-plan=ENTRY] .scheme-entry{display:block}
 .entry-plans a{display:flex;align-items:center;justify-content:center;min-width:0;min-height:58px;padding:12px 6px;border:1px solid #e2e2eb;border-radius:6px;background:#fff;color:#20234f;text-decoration:none;font-size:22px;font-weight:700;letter-spacing:-.035em;white-space:nowrap}
 .entry-plans a:last-child{font-size:19px}
 .entry-plans a:hover{border-color:#e92879;background:#fff6fa}
-.entry-plans a:focus-visible,.scheme-home:focus-visible{outline:2px solid #db2976;outline-offset:3px}
+.entry-admin{display:flex;justify-content:flex-end;margin-top:25px;padding-top:14px;border-top:1px solid #e2e2eb}
+.entry-admin-link{display:flex;align-items:center;gap:9px;min-height:44px;padding:9px 0 9px 12px;border:0;border-radius:0;background:transparent;color:#20234f;font-size:14px;font-weight:600;text-decoration:none}
+.entry-admin-link:hover{color:#e92879;text-decoration:underline;text-underline-offset:4px}
+.entry-plans a:focus-visible,.scheme-home:focus-visible,.entry-admin-link:focus-visible{outline:2px solid #db2976;outline-offset:3px}
 .scheme-utilities{display:flex;flex-direction:column;align-items:flex-end;flex:none;gap:0;order:2}
 .topbar .scheme-utilities .view-mode-button{font-size:10px;min-height:24px;padding:3px 7px}
 .scheme-home{display:flex;align-items:center;min-height:34px;color:#20234f;font-size:12px;font-weight:650;text-decoration:none;white-space:nowrap}
 .scheme-home:hover{color:#e92879;text-decoration:underline;text-underline-offset:4px}
 #panel-sales .page-heading h1{word-break:keep-all;overflow-wrap:normal}
+.admin-route-title{padding:14px 0 12px}
+.admin-route-title h1{margin:0;color:#20234f;font-size:20px;line-height:1.4;letter-spacing:-.04em}
 .customer-mode .main-tabs,.customer-mode #panel-monthly,.customer-mode #panel-basic,.customer-mode #panel-users,.customer-mode .import-disclosure{display:none!important}
 .customer-mode .ranking-filters label:has(#rankingProposal){display:none!important}
 @media(max-width:420px){

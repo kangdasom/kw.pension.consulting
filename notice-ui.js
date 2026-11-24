@@ -2,6 +2,12 @@
   'use strict';
   const api=window.NoticePublisher,$=id=>document.getElementById(id);
   const text=$('noticeText'),message=$('noticeMessage');
+  if(!text){
+    const refreshPublic=async()=>{try{const notice=await api.deployed();$('noticeBannerText').textContent=notice.text;$('noticeBanner').hidden=!notice.text.trim();}catch{}};
+    $('infoButton').addEventListener('click',refreshPublic);
+    window.addEventListener('focus',refreshPublic);
+    window.RateNotice={hasUnsaved:()=>false};refreshPublic();return;
+  }
   const draftKey='db-rate-notice-draft-v2';
   let baseline=null,published=null,pending=null,busy=false,timer=null,attempts=0,checkId=0,legacy='',draft=null;
   try{legacy=localStorage.getItem('db-rate-notice-v1')||'';draft=JSON.parse(sessionStorage.getItem(draftKey)||'null');}catch{}

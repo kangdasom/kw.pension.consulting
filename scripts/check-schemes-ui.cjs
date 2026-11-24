@@ -14,6 +14,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
    await context.route('https://kangdasom.github.io/kw.pension.consulting/notice.json*',route=>route.fulfill({path:path.join(root,'notice.json'),contentType:'application/json'}));
   }
   const go=async(plan='')=>{await page.goto(base+(plan?'index.html?plan='+plan:''));await page.evaluate(()=>document.fonts.ready);};
+  const goAdmin=async()=>{await page.goto(base+'admin.html');await page.evaluate(()=>document.fonts.ready);};
   const fit=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'document overflow');
   const summary=[];
   for(const width of [320,390,768,1366]){
@@ -21,6 +22,9 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
    assert.ok(await page.locator('#schemeEntry').isVisible());assert.ok(!await page.locator('.app-shell').isVisible());
    assert.deepEqual(await page.locator('.entry-plans a').allTextContents(),['DB','DC','개인IRP']);
    assert.equal(await page.locator('.entry-plans').innerText(),'DB\nDC\n개인IRP');await fit();
+   const adminLink=page.locator('.entry-admin-link');assert.ok(await adminLink.isVisible());
+   const linkStyle=await adminLink.evaluate(el=>{const s=getComputedStyle(el);return {border:s.borderTopWidth,background:s.backgroundColor,font:s.fontSize};});
+   assert.equal(linkStyle.border,'0px');assert.equal(linkStyle.background,'rgba(0, 0, 0, 0)');assert.equal(linkStyle.font,'14px');
    const order=await page.evaluate(()=>({period:document.querySelector('.entry-period').getBoundingClientRect().bottom,plans:document.querySelector('.entry-plans').getBoundingClientRect().top}));assert.ok(order.period<order.plans);
    assert.ok(!await page.locator('.floating-rate-scroll').first().isVisible());
    if(width===390)await page.screenshot({path:path.join(out,'entry-390.png')});
@@ -31,9 +35,10 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     assert.equal(result.scheme,plan.toUpperCase());assert.equal(result.filter,'Y');assert.ok(result.rows.length>0);assert.ok(result.rows.every(r=>r.lineup==='Y'));
     assert.equal(result.title,'2026년 11월 원리금보장상품 공시금리 ('+(plan==='irp'?'개인IRP':plan.toUpperCase())+')');
     assert.equal(result.all.title,result.title);
+    assert.equal(await page.locator('.main-tabs,#panel-monthly,#panel-basic,#panel-users').count(),0);
+    assert.equal(await page.locator('#noticeText,#uploadFile,#userForm').count(),0);
     if(plan!=='db'){
      assert.equal(await page.locator('#panel-sales .rate-status-trigger').count(),0);
-     assert.ok(!await page.locator('.main-tabs').isVisible());
      assert.ok(!await page.locator('#proposalFilter').isVisible());assert.ok(result.all.rows.every(r=>result.rows.some(p=>p.id===r.id)));
      assert.ok(!result.all.title.includes('DB'));assert.ok(result.all.filename.includes(plan==='irp'?'개인IRP':plan.toUpperCase()));
      assert.equal(result.sources.length,90);
@@ -57,10 +62,21 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     }
     await page.locator('.scheme-home').click();await page.locator('#schemeEntry').waitFor({state:'visible'});assert.ok(await page.locator('#schemeEntry').isVisible());
    }
+   await page.locator('.entry-admin-link').click();await page.locator('#panel-monthly').waitFor({state:'visible'});await fit();
+   assert.deepEqual(await page.locator('.main-tabs button').allTextContents(),['금리·한도관리','기관정보','사용자관리']);
+   assert.ok(!await page.locator('#panel-sales').isVisible());assert.equal(await page.locator('#tab-sales').count(),0);
+   assert.equal(await page.locator('.floating-rate-head:visible,.floating-rate-scroll:visible').count(),0);
+   await page.locator('#tab-basic').click();assert.ok(await page.locator('#panel-basic').isVisible());
+   await page.locator('#tab-users').click();assert.ok(await page.locator('#panel-users').isVisible());
+   await page.locator('#tab-monthly').click();
+   if(width===390)await page.screenshot({path:path.join(out,'admin-390.png')});
+   if(width===1366)await page.screenshot({path:path.join(out,'admin-1366.png')});
+   await page.locator('.scheme-home').click();await page.locator('#schemeEntry').waitFor({state:'visible'});
   }
   // Manual DB and shared DCIRP lineups remain independent and survive navigation.
   await go('db');
   const id=await page.evaluate(()=>rates.find(r=>r.lineup==='Y'&&SCHEME_RATE_DATA.lineupSeed.products[r.id]?.dcirpLineup==='Y').id);
+  await goAdmin();
   await page.locator('#tab-basic').click();await page.locator('#showLineups').click();
   const dcControl=page.locator('select[data-product="'+id+'"][data-field="dcirpLineup"]');
   assert.equal(await dcControl.inputValue(),'Y');await dcControl.selectOption('N');await page.locator('#saveBasic').click();
@@ -72,6 +88,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   assert.equal(await page.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('db-rate-management-v1')).months)),months);
   // Read the actual XLSX with the browser parser and reconcile every accepted rate.
   if(!live){
+   await goAdmin();
    const raw=fs.readFileSync(path.join(root,'outputs','scheme-qa','당사업로드양식_변환완료_2026년11월.xlsx'));
    const audit=await page.evaluate(async bytes=>{
     const book=await RateXlsx.open(new File([new Uint8Array(bytes)],'rates.xlsx'));
