@@ -58,3 +58,10 @@ html[data-plan=ENTRY] .scheme-entry{display:block}
  /* Keep the touch area generous without making the visible button taller. */
  .topbar .scheme-utilities .view-mode-button::after{content:"";position:absolute;inset:-8px 0}
 }
+
+/* Larger page titles stay on one line within their own content width. */
+#panel-sales .page-heading,.entry-content{container-type:inline-size}
+#panel-sales .page-heading h1{min-width:0;width:100%;font-size:clamp(16px,5.4cqw,22px);white-space:nowrap;word-break:normal;overflow-wrap:normal}
+.entry-content h1{font-size:clamp(25px,9cqw,28px);white-space:nowrap}
+.admin-route-title h1{font-size:24px;white-space:nowrap}
+@media(min-width:960px){body.desktop-view #panel-sales .page-heading h1{font-size:28px}}
