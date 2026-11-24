@@ -11,7 +11,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   const base=live?'https://kangdasom.github.io/kw.pension.consulting/':'http://rates.test/kw.pension.consulting/';
   if(!live){
    await context.route('http://rates.test/**',route=>{const name=new URL(route.request().url()).pathname.replace(/^\/kw\.pension\.consulting\//,'')||'index.html';return route.fulfill({path:path.join(root,name),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.woff2')?'font/woff2':name.endsWith('.png')?'image/png':name.endsWith('.json')?'application/json':'text/html'});});
-   await context.route('https://kangdasom.github.io/kw.pension.consulting/notice.json*',route=>route.fulfill({path:path.join(root,'notice.json'),contentType:'application/json'}));
+   await context.route(/https:\/\/kangdasom\.github\.io\/kw\.pension\.consulting\/notice(?:-dc|-irp)?\.json(?:\?|$)/,route=>route.fulfill({path:path.join(root,path.basename(new URL(route.request().url()).pathname)),contentType:'application/json'}));
   }
   const go=async(plan='')=>{await page.goto(base+(plan?'index.html?plan='+plan:''));await page.evaluate(()=>document.fonts.ready);};
   const goAdmin=async()=>{await page.goto(base+'admin.html');await page.evaluate(()=>document.fonts.ready);};
@@ -36,6 +36,13 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     assert.equal(result.title,'2026년 11월 원리금보장상품 공시금리 ('+(plan==='irp'?'개인IRP':plan.toUpperCase())+')');
     assert.equal(result.all.title,result.title);
     const expectedGroups=plan==='db'?[0,1,2,3]:[2,3,1,0];
+    assert.equal(await page.locator('#sortFilter').inputValue(),plan==='db'?'rate':'default','initial sort mode');
+    if(plan!=='db'){
+     const initial=await page.evaluate(()=>({groups:[...new Set(filteredRows().map(groupRank))],first:document.querySelector('#rateTableBody .product-name').textContent,current:RateExport.snapshot('current').rows.map(r=>r.id),ids:filteredRows().map(r=>r.id)}));
+     assert.deepEqual(initial.groups,expectedGroups,'initial customer table must start with deposits');
+     assert.equal(initial.first,'은행예금');assert.deepEqual(initial.current,initial.ids);
+     assert.equal(await page.locator('#maturitySortWrap').isVisible(),false);
+    }
     assert.deepEqual([...new Set(result.all.rows.map(r=>r.group))],expectedGroups,'all export group order');
     const groupLabel=plan==='db'?'ELB/DLB → GIC → 은행예금 → 저축은행예금':'은행예금 → 저축은행예금 → GIC → ELB/DLB';
     await page.locator('#infoButton').click();
@@ -57,6 +64,8 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     assert.deepEqual(ordering.tied,expectedGroups);assert.equal(ordering.unchanged,true);
     assert.deepEqual(ordering.rateOrder,[...ordering.rateOrder].sort((a,b)=>b-a));
     await page.locator('#resetButton').click();
+    assert.equal(await page.locator('#sortFilter').inputValue(),plan==='db'?'rate':'default','reset sort mode');
+    if(plan!=='db')assert.deepEqual(await page.evaluate(()=>[...new Set(filteredRows().map(groupRank))]),expectedGroups,'reset customer group order');
     assert.equal(await page.locator('.main-tabs,#panel-monthly,#panel-basic,#panel-users').count(),0);
     assert.equal(await page.locator('#noticeText,#uploadFile,#userForm').count(),0);
     if(plan!=='db'){

@@ -34,7 +34,7 @@ function updateCategoryLabel(){
 categoryMenu.querySelectorAll('input').forEach(input => input.addEventListener('change', () => { updateCategoryLabel(); render(); }));
 updateCategoryLabel();
 document.addEventListener('click', event => { if(!document.getElementById('categoryMultiSelect').contains(event.target)){ categoryMenu.hidden = true; categoryTrigger.setAttribute('aria-expanded','false'); } if(!document.getElementById('periodMultiSelect').contains(event.target)){ periodMenu.hidden = true; periodTrigger.setAttribute('aria-expanded','false'); } });
-els.resetButton.addEventListener('click', () => { els.periodFilter.value='all'; els.ratingFilter.value='all'; els.pensionFilter.value='all'; els.lineupFilter.value='Y'; els.proposalFilter.value='all'; els.sortFilter.value='rate'; document.getElementById('maturitySort').value=String(maturities.indexOf(12)); categoryMenu.querySelectorAll('input').forEach(input => input.checked = window.RateScheme?.customer || ["파생결합사채", "보험"].includes(input.value)); periodMenu.querySelectorAll('input').forEach(input => input.checked = true); updateCategoryLabel(); updatePeriodLabel(); render(); });
+els.resetButton.addEventListener('click', () => { els.periodFilter.value='all'; els.ratingFilter.value='all'; els.pensionFilter.value='all'; els.lineupFilter.value='Y'; els.proposalFilter.value='all'; els.sortFilter.value=initialSortMode; document.getElementById('maturitySort').value=String(maturities.indexOf(12)); categoryMenu.querySelectorAll('input').forEach(input => input.checked = window.RateScheme?.customer || ["파생결합사채", "보험"].includes(input.value)); periodMenu.querySelectorAll('input').forEach(input => input.checked = true); updateCategoryLabel(); updatePeriodLabel(); render(); });
 document.getElementById('maturitySort').addEventListener('change', render);
 els.sortFilter.addEventListener('change', () => { document.getElementById('maturitySortWrap').hidden = els.sortFilter.value !== 'rate'; render(); });
 const moreFilterButton = document.getElementById('moreFilterButton');
@@ -136,3 +136,4 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 
 },{once:true});
+

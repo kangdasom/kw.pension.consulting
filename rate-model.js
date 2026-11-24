@@ -34,6 +34,7 @@ function groupRank(row){
 // Group IDs also identify ranking filters; only their sorting priority varies by plan.
 const groupSortOrder=window.RateScheme?.customer ? [2,3,1,0] : [0,1,2,3];
 const groupSortLabel=groupSortOrder.map(i=>['ELB/DLB','GIC','은행예금','저축은행예금'][i]).join(' → ');
+const initialSortMode=window.RateScheme?.customer ? 'default' : 'rate';
 function gradeRank(row){
   const rank=ratingOrder.indexOf(row.grade);
   return rank<0 ? 999 : rank;
@@ -100,7 +101,7 @@ function render(){
 // Missing internal statuses are never inferred from the presence of a rate.
 // Start with lineup Y and all proposal statuses; explicit full view clears both.
 els.lineupFilter.value='Y'; els.proposalFilter.value='all';
-els.sortFilter.value='rate';
+els.sortFilter.value=initialSortMode;
 document.getElementById('maturitySort').value=String(maturities.indexOf(12));
 const heading = document.querySelector('.page-heading');
 function ratePageTitle(){return `${monthLabel} 원리금보장상품 공시금리 (${window.RateScheme?.label||'DB'})`;}
@@ -132,7 +133,7 @@ document.getElementById('applyImport').onclick=()=>{
 try { if(approvedSource || localStorage.getItem('rate-import-active')===importData.sha256){ document.getElementById('importState').textContent=`${monthLabel} 금리 반영 완료`; document.getElementById('applyImport').disabled=true; } } catch {}
 render();
 const sortGuideHtml=`<div><b>정렬기준</b><ul><li>최초 조회 및 필터 초기화 시 다음 순서로 정렬합니다. 앞선 기준이 같으면 다음 기준을 적용합니다.</li>
-<li>1년 금리 높은 순 → 상품군 → 신용등급 높은 순 → 3년 금리 높은 순 → 5년 금리 높은 순 → 기관명 가나다순 → 동일 기관 내 상품 순</li>
+<li>${window.RateScheme?.customer ? '상품군 → 1년 금리 높은 순' : '1년 금리 높은 순 → 상품군'} → 신용등급 높은 순 → 3년 금리 높은 순 → 5년 금리 높은 순 → 기관명 가나다순 → 동일 기관 내 상품 순</li>
 <li>상품군은 ${groupSortLabel} 순입니다.</li>
 <li>전체보기·상품군별 기본순·전체 금리표 저장은 상품군을 먼저 적용한 뒤 위 기준으로 정렬합니다. 만기 금리순·신용등급순은 선택한 기준을 먼저 적용합니다.</li>
 <li>GIC 금리는 괄호 안 단리환산금리를 기준으로 비교합니다.</li></ul></div>`;
