@@ -52,3 +52,4 @@ node_modules/
 
 !/scripts/check-schemes.cjs
 !/scripts/check-schemes-ui.cjs
+!/scripts/check-rate-history-ui.cjs

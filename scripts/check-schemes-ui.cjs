@@ -30,7 +30,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
    if(width===390)await page.screenshot({path:path.join(out,'entry-390.png')});
    for(const plan of ['db','dc','irp']){
     await page.locator('.entry-plans a').nth(['db','dc','irp'].indexOf(plan)).click();
-    await page.evaluate(()=>document.fonts.ready);assert.ok(await page.locator('.app-shell').isVisible());assert.ok(!await page.locator('#schemeEntry').isVisible());await fit();
+    await page.waitForURL('**/index.html?plan='+plan);await page.locator('.app-shell').waitFor({state:'visible'});await page.evaluate(()=>document.fonts.ready);assert.ok(await page.locator('.app-shell').isVisible());assert.ok(!await page.locator('#schemeEntry').isVisible());await fit();
     const result=await page.evaluate(()=>({scheme:RateScheme.id,title:document.querySelector('.page-heading h1').textContent,rows:filteredRows().map(r=>({id:r.id,lineup:r.lineup})),sources:rates.map(r=>({id:r.id,terms:r.terms})),filter:els.lineupFilter.value,all:RateExport.snapshot('all'),storage:JSON.stringify({...localStorage})}));
     assert.equal(result.scheme,plan.toUpperCase());assert.equal(result.filter,'Y');assert.ok(result.rows.length>0);assert.ok(result.rows.every(r=>r.lineup==='Y'));
     // The proposal control used to reappear when details were opened: label display overrode hidden.
