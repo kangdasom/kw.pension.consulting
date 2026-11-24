@@ -21,9 +21,9 @@ html[data-plan=ENTRY] .scheme-entry{display:block}
 .entry-plans a:focus-visible,.scheme-home:focus-visible,.entry-admin-link:focus-visible{outline:2px solid #db2976;outline-offset:3px}
 .topbar:has(.scheme-utilities){height:64px!important}
 .scheme-utilities{display:flex;flex-direction:row;align-items:center;flex:none;gap:12px;order:2}
-.topbar .scheme-utilities .view-mode-button{font-size:10px;min-height:32px;padding:6px 10px;border:1px solid #cbcdd9;border-radius:6px;background:#f5f5f9;color:#55596e;white-space:nowrap}
+.topbar .scheme-utilities .view-mode-button{position:relative;inset:auto;font-size:10px;height:28px;min-height:28px;line-height:18px;padding:4px 9px;border:1px solid #cbcdd9;border-radius:6px;background:#f5f5f9;color:#55596e;white-space:nowrap}
 .topbar .scheme-utilities .view-mode-button:hover{background:#ececf3;border-color:#9699af}
-.scheme-home{display:flex;align-items:center;min-height:32px;padding:0;border:0;background:transparent;color:#20234f;font-size:12px;font-weight:650;text-decoration:none;white-space:nowrap}
+.scheme-home{display:flex;align-items:center;min-height:32px;padding:0;border:0;background:transparent;color:#20234f;font-size:14px;font-weight:650;text-decoration:none;white-space:nowrap}
 .scheme-home:hover{color:#e92879;text-decoration:underline;text-underline-offset:4px}
 /* Full-width title, then the period and notice action on one shared row. */
 #panel-sales .page-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:4px;align-items:center;padding:12px 0 12px}
@@ -46,11 +46,14 @@ html[data-plan=ENTRY] .scheme-entry{display:block}
  .entry-content h1{font-size:23px}
  .entry-plans a{font-size:21px}
  .entry-plans a:last-child{font-size:18px}
- .scheme-home{font-size:11px}
 }
 @media(max-width:350px){.entry-content{padding-inline:18px}.entry-plans{gap:7px}.entry-plans a:last-child{font-size:17px}}
 @media(max-width:360px){
  .topbar:has(.scheme-utilities){height:auto!important;min-height:64px;flex-wrap:wrap;row-gap:2px;padding-top:10px!important}
  .scheme-utilities{width:100%;justify-content:flex-end}
 }
-@media(pointer:coarse){.scheme-home,.topbar .scheme-utilities .view-mode-button{min-height:44px}}
+@media(pointer:coarse){
+ .scheme-home{min-height:44px}
+ /* Keep the touch area generous without making the visible button taller. */
+ .topbar .scheme-utilities .view-mode-button::after{content:"";position:absolute;inset:-8px 0}
+}
