@@ -17,6 +17,13 @@
     if(Array.from(text).length>100)throw Error('메모는 100자 이내로 입력해 주세요.');
     return text;
   }
+  function exportNotes(data) {
+    const rows=data.sections?.length>1?data.sections.flatMap(section=>section.rows):data.rows;
+    return [
+      ...(rows.some(row=>row.isGic)?['* GIC 금리는 공시금리 (단리연환산금리) 입니다.']:[]),
+      '* 상품 매수 전 매수가능여부를 확인해주세요.'
+    ];
+  }
   function snapshot(scope, now=new Date(), memo='') {
     const all=scope==='all';
     const exportMemo=all?'':memoText(memo);
@@ -32,7 +39,7 @@
     const publicRows=(source,indices)=>source.map(row=>{
       const states=indices.filter(i=>row.terms[maturities[i]]).map(i=>row.proposals[maturities[i]]);
       const status=!states.length || states.some(s=>s!=='Y'&&s!=='N')?'확인':states.every(s=>s==='Y')?'Y':states.every(s=>s==='N')?'N':'일부';
-      return {id:row.id,group:groupRank(row),status,product:row.type,institution:row.institution,grade:row.grade||'—',
+      return {id:row.id,group:groupRank(row),isGic:row.category==='보험',status,product:row.type,institution:row.institution,grade:row.grade||'—',
         cells:indices.map(i=>{
           const value=row.terms[maturities[i]]?.rate;
           return value===undefined?'—':row.category==='보험'?`${value.toFixed(2)} (${effectiveRate(row,i).toFixed(2)})`:value.toFixed(2);
@@ -73,10 +80,7 @@
       const lines=values.map((value,i)=>{ctx.font=font(i>=3?17.25:15);return wrap(ctx,value,widths[i]-12);});
       return {row,lines,height:Math.max(42,...lines.map(part=>part.length*21+14))};
     });
-    const notes=[
-      '* GIC 금리는 공시금리 (단리연환산금리) 입니다.',
-      '* 상품 매수 전 매수가능여부를 확인해주세요.'
-    ];
+    const notes=exportNotes(data);
     ctx.font=font(13);
     const foot=notes.flatMap(text=>wrap(ctx,text,width-pad*2));
     const memo=data.scope==='current'?memoText(data.memo):'';
@@ -155,7 +159,9 @@
       return {lines,height:Math.max(42,...lines.map(part=>part.length*21+14))};
     })}));
     const bottom=tableTop+headHeight+Math.max(...sections.map(s=>s.body.length?s.body.reduce((sum,r)=>sum+r.height,0):42));
-    const noteTop=bottom+26,height=noteTop+21+pad;
+    ctx.font=font(13);
+    const foot=exportNotes(data).flatMap(text=>wrap(ctx,text,width-pad*2));
+    const noteTop=bottom+26,height=noteTop+(foot.length-1)*21+pad;
     const scale=Math.min(1.5,Math.sqrt(12000000/(width*height)),8192/height,4096/width);
     if(scale<1)throw Error('한 장에 저장하기에는 상품이 너무 많습니다. 조회 범위를 줄여 다시 시도해 주세요.');
     canvas.width=Math.ceil(width*scale);canvas.height=Math.ceil(height*scale);ctx.scale(scale,scale);
@@ -180,7 +186,7 @@
       if(!section.body.length){ctx.fillStyle='#696979';ctx.font=font(14);ctx.fillText('조건에 맞는 상품이 없습니다.',left+tableWidth/2,y+21);}
     });
     ctx.textAlign='left';ctx.fillStyle='#696979';ctx.font=font(13);
-    ['* GIC 금리는 공시금리 (단리연환산금리) 입니다.','* 상품 매수 전 매수가능여부를 확인해주세요.'].forEach((t,i)=>ctx.fillText(t,pad,noteTop+i*21));
+    foot.forEach((t,i)=>ctx.fillText(t,pad,noteTop+i*21));
     return {width,height,pixelWidth:canvas.width,pixelHeight:canvas.height};
   }
   window.RateExport={snapshot,draw,loadBrand,memoText};

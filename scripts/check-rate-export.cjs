@@ -83,6 +83,23 @@ assert(painted.includes(withMemo.rows.at(-1).institution));
 painted.length=0;api.draw(canvas,{...all,memo});assert(!painted.includes('메모'));
 painted.length=0;api.draw(canvas,{...initial,memo:' '});assert(!painted.includes('메모'));
 assert.equal(run('JSON.stringify(rates)'),memoSourceBefore);
+// Notes depend on exported rows, including each comparison section, not query filters.
+const gicNote='* GIC 금리는 공시금리 (단리연환산금리) 입니다.';
+const buyNote='* 상품 매수 전 매수가능여부를 확인해주세요.';
+const bankRows=initial.rows.filter(row=>!row.isGic).slice(0,2),gicRow=initial.rows.find(row=>row.isGic);
+assert(gicRow);assert(bankRows.length);
+for(const comparison of [false,true]){
+ const renderData=includeGic=>({...initial,rows:includeGic?[...bankRows,gicRow]:bankRows,
+  ...(comparison?{sections:[{label:'은행예금 · 1년',indices:[0],rows:bankRows.map(r=>({...r,cells:[r.cells[0]]}))},{label:'추가 상품 · 1년',indices:[0],rows:includeGic?[{...gicRow,cells:[gicRow.cells[0]]}]:[]}]}:{})});
+ painted.length=0;positions.length=0;const without=api.draw(canvas,renderData(false));
+ assert(!painted.includes(gicNote));assert(painted.includes(buyNote));
+ const buyY=positions.find(p=>p.text===buyNote).y;
+ painted.length=0;const withGic=api.draw(canvas,renderData(true));assert(painted.includes(gicNote));assert(painted.includes(buyNote));
+ // The omitted note leaves no empty line before the remaining purchase notice.
+ assert(without.height<withGic.height);assert.equal(buyY,without.height-28);
+}
+assert.equal(all.rows.find(r=>r.id===gicRow.id).isGic,true);
+console.log('PASS: GIC-only conditional note for ordinary/comparison exports, common purchase note and collapsed footer spacing.');
 console.log('PASS: optional current-only memo, unchanged rows/order, 100 Unicode character limit, blank omission and measured memo/table/footer layout.');
 console.log('PASS: current filters/order, all 98 approved IDs, four/all vs selected maturities, status scope, immutable snapshot, no internal data, empty/error handling, filename, Korea time and complete canvas.');
 // Optional native Canvas QA: generate the same production document and PNG.
