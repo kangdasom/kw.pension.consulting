@@ -4,7 +4,7 @@ html:not([data-plan]) .app-shell{visibility:hidden}
 html[data-plan=ENTRY] .app-shell{display:none!important}
 html[data-plan=ENTRY] .scheme-entry{display:block}
 .scheme-entry{max-width:520px;margin:24px auto;background:#fff;border:1px solid #e2e2eb;border-radius:12px;overflow:hidden;color:#20234f}
-.entry-header{min-height:78px;padding:10px 25px;display:flex;align-items:center;border-bottom:2px solid #e92879}
+.entry-header{padding:10px 25px 3px;display:flex;align-items:center;border-bottom:2px solid #e92879}
 .entry-header img{display:block;width:216px;max-width:100%;height:auto}
 .entry-content{padding:32px 30px 34px;max-width:436px;margin:auto}
 .entry-month{display:block;font-size:12px;font-weight:500;margin:0 0 9px}
@@ -15,7 +15,7 @@ html[data-plan=ENTRY] .scheme-entry{display:block}
 .entry-plans a{display:flex;align-items:center;justify-content:center;min-width:0;min-height:58px;padding:12px 6px;border:1px solid #e2e2eb;border-radius:6px;background:#fff;color:#20234f;text-decoration:none;font-size:22px;font-weight:700;letter-spacing:-.035em;white-space:nowrap}
 .entry-plans a:last-child{font-size:19px}
 .entry-plans a:hover{border-color:#e92879;background:#fff6fa}
-.entry-admin{display:flex;justify-content:flex-end;margin-top:25px;padding-top:14px;border-top:1px solid #e2e2eb}
+.entry-admin{display:flex;justify-content:flex-end;margin-top:25px;padding-top:14px}
 .entry-admin-link{display:flex;align-items:center;gap:9px;min-height:44px;padding:9px 0 9px 12px;border:0;border-radius:0;background:transparent;color:#20234f;font-size:14px;font-weight:600;text-decoration:none}
 .entry-admin-link:hover{color:#e92879;text-decoration:underline;text-underline-offset:4px}
 .entry-plans a:focus-visible,.scheme-home:focus-visible,.entry-admin-link:focus-visible{outline:2px solid #db2976;outline-offset:3px}
