@@ -58,6 +58,30 @@
   const selected = new Set();
   const status = value => ['Y','N','확인'].includes(value) ? value : '확인';
   const termKey = (id, term) => JSON.stringify([id, String(term)]);
+  function receiveShared(value,discardMonth=null) {
+    const shared=window.MonthlyManagementPublisher.validate(value);
+    let conflicted=false;
+    for(const [month,items] of Object.entries(shared.months)){
+      const previous=saved.months[month] || {};
+      const edits=draft.months[month] ||= {};
+      for(const [key,fields] of Object.entries(items)){
+        const before=previous[key] || {},editing=edits[key] ||= {};
+        for(const [field,next] of Object.entries(fields)){
+          if(discardMonth===month || editing[field]===before[field])editing[field]=next;
+          else if(next!==before[field] && next!==editing[field])conflicted=true;
+        }
+        previous[key]={...before,...fields};
+      }
+      saved.months[month]=previous;
+    }
+    if(discardMonth)draft.months[discardMonth]=clone(saved.months[discardMonth] || {});
+    applySettings(saved);render();
+    if(!window.RateScheme || window.RateScheme.admin){
+      renderMonthly();updateDirty();
+      const row=rates.find(r=>r.id===$('termDetails').dataset.row);if(row)renderDetails(row);
+    }
+    return {conflicted};
+  }
   function applySettings(settings) {
     rates.forEach(row => {
       const institution = settings.institutions[row.institutionCode] || {};
@@ -81,7 +105,7 @@
     const children=[...shell.children].filter(child=>!child.classList.contains('topbar')&&!child.classList.contains('work-in-progress'));
     shell.append(sales);children.forEach(child=>sales.append(child));
     sales.querySelector('.import-disclosure')?.remove();
-    window.RateManagement={hasUnsaved:()=>false,switchTab(id){if(id!=='sales')location.href='admin.html#'+id;},applySource(next){activateRateSource(next);applySettings(saved);render();}};
+    window.RateManagement={hasUnsaved:()=>false,receiveShared,switchTab(id){if(id!=='sales')location.href='admin.html#'+id;},applySource(next){activateRateSource(next);applySettings(saved);render();}};
     render();return;
   }
   const adminRoute=Boolean(window.RateScheme?.admin);
@@ -331,6 +355,11 @@
     $('basicDirty').textContent=different(draft.institutions,saved.institutions)||different(draft.products,saved.products)?'미반영 변경사항 있음':'변경사항 없음';
   }
   function save(kind){
+    if(kind==='monthly'&&(window.RateScheme?.admin||window.MonthlyManagementPublisher)){
+      if(window.RateMonthlyPublishing)window.RateMonthlyPublishing.save();
+      else $('monthlyMessage').textContent='공용 저장 기능을 준비하고 있습니다. 새로고침 후 다시 시도해주세요.';
+      return;
+    }
     const next=clone(saved);
     if(kind==='monthly')next.months=clone(draft.months);
     else {next.institutions=clone(draft.institutions);next.products=clone(draft.products);}
@@ -354,6 +383,22 @@
   if(storageWarning)$('monthlyMessage').textContent=storageWarning;
   window.RateManagement={
     switchTab,
+    receiveShared,
+    monthlyHasUnsaved:()=>different(draft.months,saved.months),
+    monthlySnapshot(){
+      const records={};
+      for(const [key,fields] of Object.entries(monthRecords())){
+        let id,term;try{[id,term]=JSON.parse(key);}catch{continue;}
+        const row=rates.find(r=>r.id===id && isMonthlyTarget(r));
+        if(row && (term==='common'||(maturities.includes(Number(term)) && row.terms[term])))records[key]=clone(fields);
+      }
+      return {month:importData.month,records};
+    },
+    restoreMonthly(request){
+      const month=draft.months[request.month] ||= {};
+      for(const [key,fields] of Object.entries(request.changes))month[key]={...month[key],...fields};
+      renderMonthly();updateDirty();
+    },
     hasUnsaved:()=>different(draft.months,saved.months)||different(draft.institutions,saved.institutions)||different(draft.products,saved.products),
     applySource(next){
       activateRateSource(next);applySettings(saved);selected.clear();

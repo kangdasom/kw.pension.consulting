@@ -30,7 +30,7 @@ function include(reference, parent = 'index.html') {
   assert(!/^(?:[a-z]+:|\/)/i.test(reference), `Non-relative asset: ${reference}`);
   const name = path.posix.normalize(path.posix.join(path.posix.dirname(parent), reference.split(/[?#]/)[0]));
   assert(!name.startsWith('..') && !name.includes('\\'), `Unsafe asset path: ${name}`);
-  assert(/\.(?:html|css|js|woff2|png|svg|jpg|jpeg|webp|ico)$/.test(name) || /^notice(?:-dc|-irp)?\.json$/.test(name), `Unexpected asset: ${name}`);
+  assert(/\.(?:html|css|js|woff2|png|svg|jpg|jpeg|webp|ico)$/.test(name) || /^(?:notice(?:-dc|-irp)?|management-shared)\.json$/.test(name), `Unexpected asset: ${name}`);
   if (files.has(name)) return;
   const source = path.join(root, name);
   assert(fs.statSync(source).isFile() && !fs.lstatSync(source).isSymbolicLink(), `Invalid asset: ${name}`);
@@ -49,7 +49,7 @@ function include(reference, parent = 'index.html') {
   }
 }
 include('index.html');
-for (const name of ['notice.json','notice-dc.json','notice-irp.json']) {
+for (const name of ['notice.json','notice-dc.json','notice-irp.json','management-shared.json']) {
   audit(name, fs.readFileSync(path.join(root, name), 'utf8'));
   include(name);
 }

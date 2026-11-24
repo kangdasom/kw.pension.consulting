@@ -9,6 +9,7 @@
 !/notice.json
 !/notice-dc.json
 !/notice-irp.json
+!/management-shared.json
 /rates-data.november.pending.js
 !/assets/
 /assets/*
@@ -24,6 +25,9 @@
 !/scripts/prepare-pages.cjs
 !/scripts/check-rates.cjs
 !/scripts/check-management.cjs
+!/scripts/check-management-details-ui.cjs
+!/scripts/check-management-publish.cjs
+!/scripts/check-management-publish-ui.cjs
 !/scripts/check-rate-scroll.cjs
 !/scripts/check-header-sort-ui.cjs
 !/scripts/check-rate-export.cjs

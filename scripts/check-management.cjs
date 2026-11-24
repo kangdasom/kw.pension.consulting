@@ -268,3 +268,27 @@ editCommon(commonFailure,'note','저장 실패 후 초안');commonFailure.elemen
 assert.match(commonFailure.element('termDetails').innerHTML,/저장 실패 후 초안/);
 assert.match(commonFailure.element('monthlyMessage').textContent,/저장하지 못했습니다/);
 console.log('PASS: monthly common date/note, legacy conflict recovery, independent limits/statuses, draft/save/cancel/reload, explicit clears, historical months and failed-save draft preservation.');
+
+// Published monthly fields override stale browser records; unsaved edits are retained.
+const sync=boot(sharedStorage,false,'2026-11');
+sync.context.window.MonthlyManagementPublisher=require('../management-publish.js');
+const syncBefore=sharedStorage['db-rate-management-v1'];
+const sharedDoc={schema:'monthly-management-v1',revision:'shared',months:{'2026-11':{[sharedKey(12)]:{status:'N',amount:'공용 한도'},[sharedKey('common')]:{note:'공용 비고',checkedAt:'2026-11-24'}}}};
+assert.equal(sync.context.window.RateManagement.receiveShared(sharedDoc).conflicted,false);
+assert.equal(sharedStorage['db-rate-management-v1'],syncBefore);
+assert.equal(sync.run(`rates.find(r=>r.id===${JSON.stringify(sharedId)}).proposals[12]`),'N');
+openShared(sync);assert.match(sync.element('termDetails').innerHTML,/공용 비고/);
+editCommon(sync,'note','미저장 비고');
+assert.equal(sync.context.window.RateManagement.receiveShared({...sharedDoc,revision:'new',months:{'2026-11':{[sharedKey('common')]:{note:'다른 기기 비고'}}}}).conflicted,true);
+openShared(sync);assert.match(sync.element('termDetails').innerHTML,/미저장 비고/);
+sync.context.window.RateManagement.receiveShared(sharedDoc,'2026-11');openShared(sync);
+assert.match(sync.element('termDetails').innerHTML,/공용 비고/);
+assert.doesNotMatch(sync.element('termDetails').innerHTML,/미저장 비고/);
+assert.equal(sync.context.window.RateManagement.monthlySnapshot().records[sharedKey(12)].amount,'공용 한도');
+assert.equal(sharedStorage['db-rate-management-v1'],syncBefore);
+console.log('PASS: published monthly settings override stale cache, unsaved edit conflict detection, explicit latest discard, shared sales status and unchanged browser storage.');
+sync.context.window.RateScheme={admin:true};delete sync.context.window.MonthlyManagementPublisher;
+sync.element('saveMonthly').onclick();
+assert.match(sync.element('monthlyMessage').textContent,/공용 저장 기능을 준비/);
+assert.equal(sharedStorage['db-rate-management-v1'],syncBefore);
+console.log('PASS: official admin cannot silently fall back to browser-only save when the publication scripts fail.');

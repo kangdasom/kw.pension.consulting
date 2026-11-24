@@ -24,6 +24,7 @@ jobs:
         run: |
           node scripts/check-rates.cjs
           node scripts/check-management.cjs
+          node scripts/check-management-publish.cjs
           node scripts/check-rate-scroll.cjs
           node scripts/check-rate-export.cjs
           node scripts/check-rate-export-ui.cjs
