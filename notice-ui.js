@@ -6,7 +6,7 @@
   function showBanner(notice,plan){
     $('noticeBannerText').textContent=notice.text;
     $('noticeBanner').hidden=!notice.text.trim();
-    $('noticeBanner').querySelector('strong').textContent=labels[plan]+' 상품담당자 공지';
+    $('noticeBanner').querySelector('strong').textContent='관리자 공지사항';
   }
   if(!text){
     const plan=window.RateScheme?.id||'DB';
