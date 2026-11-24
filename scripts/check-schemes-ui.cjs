@@ -35,6 +35,28 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     assert.equal(result.scheme,plan.toUpperCase());assert.equal(result.filter,'Y');assert.ok(result.rows.length>0);assert.ok(result.rows.every(r=>r.lineup==='Y'));
     assert.equal(result.title,'2026년 11월 원리금보장상품 공시금리 ('+(plan==='irp'?'개인IRP':plan.toUpperCase())+')');
     assert.equal(result.all.title,result.title);
+    const expectedGroups=plan==='db'?[0,1,2,3]:[2,3,1,0];
+    assert.deepEqual([...new Set(result.all.rows.map(r=>r.group))],expectedGroups,'all export group order');
+    const groupLabel=plan==='db'?'ELB/DLB → GIC → 은행예금 → 저축은행예금':'은행예금 → 저축은행예금 → GIC → ELB/DLB';
+    await page.locator('#infoButton').click();
+    assert.ok((await page.locator('#infoModal .guide-list').innerText()).includes(groupLabel));
+    await page.locator('[data-close="infoModal"]').click();
+    const ordering=await page.evaluate(()=>{
+     const before=JSON.stringify({...localStorage});
+     document.querySelectorAll('#categoryMenu input').forEach(input=>input.checked=true);
+     showAllSource();
+     const ids=filteredRows().map(r=>r.id),groups=[...new Set(filteredRows().map(groupRank))];
+     const current=RateExport.snapshot('current').rows.map(r=>r.id);
+     els.sortFilter.value='rate';document.getElementById('maturitySort').value=String(maturities.indexOf(12));
+     const rateOrder=filteredRows().map(r=>effectiveRate(r,maturities.indexOf(12))).filter(v=>v!==null);
+     const sample=(category,type)=>({id:type,category,type,grade:'AA',institution:'기관',terms:{12:{rate:4}},note:''});
+     const tied=[sample('파생결합사채','ELB'),sample('보험','GIC'),sample('예금','은행예금'),sample('예금','저축은행예금')].sort((a,b)=>compareRate(a,b,maturities.indexOf(12))||defaultOrder(a,b)).map(groupRank);
+     return {ids,groups,current,rateOrder,tied,unchanged:before===JSON.stringify({...localStorage})};
+    });
+    assert.deepEqual(ordering.groups,expectedGroups);assert.deepEqual(ordering.current,ordering.ids);
+    assert.deepEqual(ordering.tied,expectedGroups);assert.equal(ordering.unchanged,true);
+    assert.deepEqual(ordering.rateOrder,[...ordering.rateOrder].sort((a,b)=>b-a));
+    await page.locator('#resetButton').click();
     assert.equal(await page.locator('.main-tabs,#panel-monthly,#panel-basic,#panel-users').count(),0);
     assert.equal(await page.locator('#noticeText,#uploadFile,#userForm').count(),0);
     if(plan!=='db'){
@@ -159,3 +181,4 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   console.log('PASS: entry/three plan URLs/return; 320/390/768/1366px; initial lineup Y; customer status/admin omission; independent lineups; current PNG/download equality; exact source reconciliation and atomic multi-plan upload. '+JSON.stringify(summary));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
+

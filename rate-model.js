@@ -31,6 +31,9 @@ function proposalState(row){
 function groupRank(row){
   return row.category==='파생결합사채' ? 0 : row.category==='보험' ? 1 : row.type==='은행예금' ? 2 : 3;
 }
+// Group IDs also identify ranking filters; only their sorting priority varies by plan.
+const groupSortOrder=window.RateScheme?.customer ? [2,3,1,0] : [0,1,2,3];
+const groupSortLabel=groupSortOrder.map(i=>['ELB/DLB','GIC','은행예금','저축은행예금'][i]).join(' → ');
 function gradeRank(row){
   const rank=ratingOrder.indexOf(row.grade);
   return rank<0 ? 999 : rank;
@@ -44,9 +47,9 @@ function productRank(row){
   const note=row.note || '';
   return ({'':0,I:0,II:1,III:2})[note] ?? (note.includes('보너스') ? 3 : 4);
 }
-// Approved workbook order: group, 1y rate, grade, 3y rate, 5y rate, name, variant.
+// Plan-specific group priority, then 1y rate, grade, 3y rate, 5y rate, name, variant.
 function defaultOrder(a,b){
-  return groupRank(a)-groupRank(b) || compareRate(a,b,maturities.indexOf(12)) || gradeRank(a)-gradeRank(b) ||
+  return groupSortOrder.indexOf(groupRank(a))-groupSortOrder.indexOf(groupRank(b)) || compareRate(a,b,maturities.indexOf(12)) || gradeRank(a)-gradeRank(b) ||
     compareRate(a,b,maturities.indexOf(36)) || compareRate(a,b,maturities.indexOf(60)) || a.institution.localeCompare(b.institution,'ko') ||
     productRank(a)-productRank(b) || a.id.localeCompare(b.id,'ko');
 }
@@ -128,6 +131,11 @@ document.getElementById('applyImport').onclick=()=>{
 };
 try { if(approvedSource || localStorage.getItem('rate-import-active')===importData.sha256){ document.getElementById('importState').textContent=`${monthLabel} 금리 반영 완료`; document.getElementById('applyImport').disabled=true; } } catch {}
 render();
+const sortGuideHtml=`<div><b>정렬기준</b><ul><li>최초 조회 및 필터 초기화 시 다음 순서로 정렬합니다. 앞선 기준이 같으면 다음 기준을 적용합니다.</li>
+<li>1년 금리 높은 순 → 상품군 → 신용등급 높은 순 → 3년 금리 높은 순 → 5년 금리 높은 순 → 기관명 가나다순 → 동일 기관 내 상품 순</li>
+<li>상품군은 ${groupSortLabel} 순입니다.</li>
+<li>전체보기·상품군별 기본순·전체 금리표 저장은 상품군을 먼저 적용한 뒤 위 기준으로 정렬합니다. 만기 금리순·신용등급순은 선택한 기준을 먼저 적용합니다.</li>
+<li>GIC 금리는 괄호 안 단리환산금리를 기준으로 비교합니다.</li></ul></div>`;
 document.querySelector('#infoModal .guide-list').innerHTML=`<div><b>금리 기준 및 GIC 안내</b><ul><li>본 금리표의 금리는 퇴직연금 <strong>DB제도에 적용되는 금리</strong>입니다.</li>
 <li>GIC는 복리상품으로, 공시금리와 함께 <strong>연환산한 단리기준 금리</strong>를 괄호 안에 표시했습니다.</li>
 <li>GIC 단리환산금리는 동일한 산식으로 일괄 계산한 참고 수치입니다. 실제 제안서 작성 시에는 해당 상품제공기관 홈페이지의 공시금리를 다시 확인해주세요.</li></ul></div>
@@ -137,6 +145,5 @@ document.querySelector('#infoModal .guide-list').innerHTML=`<div><b>금리 기�
 <li><strong>전체 조회에서는 모든 금리를 동일하게 표시</strong>합니다. 필터 적용 시 사전 확인이 필요한 금리에는 <strong>분홍색 점</strong>을, 그 외 선택 조건에 맞지 않는 금리는 연하게 표시합니다.</li>
 <li>필터 상태에서 금리 위 분홍색 점은 상품제공기관에 사전 확인 후 사용할 수 있음을 의미합니다.</li>
 <li>저장 이미지에는 분홍색 점·말풍선·상태별 흐림 표시가 포함되지 않습니다.</li></ul></div>
-<div><b>정렬기준</b><ul><li>최초 조회 및 필터 초기화 시 다음 순서로 정렬합니다. 앞선 기준이 같으면 다음 기준을 적용합니다.</li>
-<li>1년 금리 높은 순 → 상품군 → 신용등급 높은 순 → 3년 금리 높은 순 → 5년 금리 높은 순 → 기관명 가나다순 → 동일 기관 내 상품 순</li>
-<li>상품군은 파생결합사채 → 보험 → 은행예금 → 저축은행예금 순이며, GIC 금리는 괄호 안 단리환산금리를 기준으로 비교합니다.</li></ul></div>`;
+${sortGuideHtml}`;
+
