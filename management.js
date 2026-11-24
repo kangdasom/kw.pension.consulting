@@ -67,7 +67,8 @@
       row.lineup = product[window.RateScheme?.customer?'dcirpLineup':'lineup'] || null;
       row.proposals = {};
       Object.keys(row.terms).forEach(term => {
-        row.proposals[term] = status(settings.months[importData.month]?.[termKey(row.id,term)]?.status);
+        // Monthly availability belongs to DB corporate proposals only.
+        row.proposals[term] = window.RateScheme?.customer ? '확인' : status(settings.months[importData.month]?.[termKey(row.id,term)]?.status);
       });
     });
   }
@@ -108,7 +109,7 @@
   const securityNote = '<p class="management-notice">금리·한도·기관 관리정보는 이 브라우저에만 저장됩니다. 공지는 kangdasom GitHub 계정으로 게시 요청을 제출한 뒤 전체 방문자에게 배포됩니다.</p>';
   admin.innerHTML = `${securityNote}<div class="management-heading"><h1>월별 금리·제안가능 관리</h1><span class="source-badge">실제 엑셀 데이터</span></div>
     <div class="management-period"><label>기준 월 <select aria-label="관리 기준 월"><option>${escapeHtml(importData.month)}</option></select></label><button type="button" id="manageImport">엑셀 검증·반영</button></div>
-    <p class="management-help" id="managementPeriodHelp">적용기간 ${escapeHtml(importData.start)} ~ ${escapeHtml(importData.end)} · 기본정보의 라인업 Y 상품만 관리합니다. 새 월의 제안가능 상태는 확인부터 시작합니다.</p>
+    <p class="management-help" id="managementPeriodHelp">적용기간 ${escapeHtml(importData.start)} ~ ${escapeHtml(importData.end)} · DB법인 라인업 Y 상품의 제안가능 여부를 관리합니다. DC·개인IRP에는 적용하지 않습니다. 새 월의 제안가능 상태는 확인부터 시작합니다.</p>
     <section class="notice-editor" aria-labelledby="noticeEditorTitle">
       <div class="notice-editor-heading"><h2 id="noticeEditorTitle">공지작성</h2><span id="noticeDirty">변경사항 없음</span></div>
       <label for="noticePlan">공지 대상 <select id="noticePlan"><option value="DB">DB</option><option value="DC">DC</option><option value="IRP">개인IRP</option></select></label>
@@ -337,7 +338,7 @@
       $('termDetails').innerHTML='';delete $('termDetails').dataset.row;
       const monthSelect=admin.querySelector('.management-period select');
       monthSelect.innerHTML=`<option>${escapeHtml(next.month)}</option>`;
-      $('managementPeriodHelp').textContent=`적용기간 ${next.start} ~ ${next.end} · 기본정보의 라인업 Y 상품만 관리합니다. 새 월의 제안가능 상태는 확인부터 시작합니다.`;
+      $('managementPeriodHelp').textContent=`적용기간 ${next.start} ~ ${next.end} · DB법인 라인업 Y 상품의 제안가능 여부를 관리합니다. DC·개인IRP에는 적용하지 않습니다. 새 월의 제안가능 상태는 확인부터 시작합니다.`;
       renderMonthly();renderBasic();updateDirty();render();
     }
   };

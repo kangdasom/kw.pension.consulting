@@ -33,6 +33,21 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     await page.evaluate(()=>document.fonts.ready);assert.ok(await page.locator('.app-shell').isVisible());assert.ok(!await page.locator('#schemeEntry').isVisible());await fit();
     const result=await page.evaluate(()=>({scheme:RateScheme.id,title:document.querySelector('.page-heading h1').textContent,rows:filteredRows().map(r=>({id:r.id,lineup:r.lineup})),sources:rates.map(r=>({id:r.id,terms:r.terms})),filter:els.lineupFilter.value,all:RateExport.snapshot('all'),storage:JSON.stringify({...localStorage})}));
     assert.equal(result.scheme,plan.toUpperCase());assert.equal(result.filter,'Y');assert.ok(result.rows.length>0);assert.ok(result.rows.every(r=>r.lineup==='Y'));
+    // The proposal control used to reappear when details were opened: label display overrode hidden.
+    await page.locator('#moreFilterButton').click();
+    assert.equal(await page.locator('#proposalFilter').isVisible(),plan==='db');
+    assert.deepEqual(await page.locator('#secondaryFilters label:visible > span').allTextContents(),plan==='db'?['사업자여부','라인업','제안가능여부']:['사업자여부','라인업']);
+    if(plan!=='db'){
+     const filtering=await page.evaluate(()=>{
+      const expected=filteredRows().map(r=>r.id);
+      els.proposalFilter.value='N';render();
+      const actual=filteredRows().map(r=>r.id);els.proposalFilter.value='all';render();
+      return {expected,actual,states:rates.flatMap(r=>Object.values(r.proposals))};
+     });
+     assert.deepEqual(filtering.actual,filtering.expected);assert.ok(filtering.states.every(s=>s==='확인'));
+    }
+    if(width===390)await page.screenshot({path:path.join(out,plan+'-details-390.png')});
+    await page.locator('#moreFilterButton').click();
     assert.equal(result.title,'2026년 11월 원리금보장상품 공시금리 ('+(plan==='irp'?'개인IRP':plan.toUpperCase())+')');
     assert.equal(result.all.title,result.title);
     const expectedGroups=plan==='db'?[0,1,2,3]:[2,3,1,0];
@@ -113,6 +128,8 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
       assert.deepEqual(onlyTwo.indices,[3]);assert.deepEqual([...onlyTwo.ids].sort(),[...onlyTwo.expected].sort());
       await page.locator('#resetButton').click();assert.equal(await page.locator('#maturitySort').inputValue(),'2');assert.equal(await page.locator('#periodMenu input:checked').count(),6);assert.ok((await page.locator('#periodTrigger').innerText()).includes('전체 만기'));
       await page.locator('#sales-view-tab-ranking').click();
+      assert.equal(await page.locator('#rankingProposal').isVisible(),false);
+      assert.equal(await page.locator('.ranking-filters label:visible').count(),3);
       assert.deepEqual(await page.locator('[data-ranking-index]').allTextContents(),expectedTerms);
       for(let group=0;group<4;group++){
        await page.locator('[data-ranking-group="'+group+'"]').click();
@@ -128,6 +145,12 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
        }
       }
       await page.locator('[data-ranking-group="0"]').click();await page.locator('[data-ranking-index="2"]').click();
+      const independent=await page.evaluate(()=>{
+       const expected=SalesRanking.current().sections.map(s=>s.rows.map(r=>r.id));
+       document.getElementById('rankingProposal').value='N';render();
+       const actual=SalesRanking.current().sections.map(s=>s.rows.map(r=>r.id));
+       document.getElementById('rankingProposal').value='all';render();return {expected,actual};
+      });assert.deepEqual(independent.actual,independent.expected);
       assert.equal(await page.locator('.ranking-grid .rate-status-trigger').count(),0);assert.ok(!await page.locator('#rankingProposal').isVisible());
       assert.ok(await page.locator('.ranking-grid tbody tr').count());await page.locator('#sales-view-tab-full').click();
       await page.locator('#infoButton').click();const guide=await page.locator('#infoModal .guide-list').innerText();assert.ok(!guide.includes('제안가능'),JSON.stringify({guide,errors}));await page.locator('[data-close="infoModal"]').click();
@@ -136,6 +159,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
     await page.locator('.scheme-home').click();await page.locator('#schemeEntry').waitFor({state:'visible'});assert.ok(await page.locator('#schemeEntry').isVisible());
    }
    await page.locator('.entry-admin-link').click();await page.locator('#panel-monthly').waitFor({state:'visible'});await fit();
+   assert.ok((await page.locator('#managementPeriodHelp').innerText()).includes('DB법인'));
    assert.deepEqual(await page.locator('.main-tabs button').allTextContents(),['금리·한도관리','기관정보','사용자관리']);
    assert.ok(!await page.locator('#panel-sales').isVisible());assert.equal(await page.locator('#tab-sales').count(),0);
    assert.equal(await page.locator('.floating-rate-head:visible,.floating-rate-scroll:visible').count(),0);
@@ -190,4 +214,3 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   console.log('PASS: entry/three plan URLs/return; 320/390/768/1366px; initial lineup Y; customer status/admin omission; independent lineups; current PNG/download equality; exact source reconciliation and atomic multi-plan upload. '+JSON.stringify(summary));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
-

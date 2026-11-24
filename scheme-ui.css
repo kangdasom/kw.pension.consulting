@@ -35,7 +35,8 @@ html[data-plan=ENTRY] .scheme-entry{display:block}
 .admin-route-title{padding:14px 0 12px}
 .admin-route-title h1{margin:0;color:#20234f;font-size:20px;line-height:1.4;letter-spacing:-.04em}
 .customer-mode .main-tabs,.customer-mode #panel-monthly,.customer-mode #panel-basic,.customer-mode #panel-users,.customer-mode .import-disclosure{display:none!important}
-.customer-mode .ranking-filters label:has(#rankingProposal){display:none!important}
+.customer-mode label:has(#proposalFilter),.customer-mode label:has(#rankingProposal){display:none!important}
+.customer-mode .filter-panel .secondary-filters{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .customer-mode .table-frame .sales-rate-table{width:max(calc(100% + 72px),504px)}
 .customer-mode .table-frame .sales-rate-table .rate-head,.customer-mode .table-frame .sales-rate-table .rate{width:max(48px,calc((100cqw - 144px)/6));min-width:48px}
 @media(min-width:960px){body.customer-mode.desktop-view .table-frame .sales-rate-table{width:100%}body.customer-mode.desktop-view .table-frame .sales-rate-table .rate-head,body.customer-mode.desktop-view .table-frame .sales-rate-table .rate{width:auto}}

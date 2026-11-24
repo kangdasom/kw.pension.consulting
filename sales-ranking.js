@@ -16,7 +16,7 @@
  function hideToast(){clearTimeout(toastTimer);toast.textContent='';toast.classList.remove('visible');}
  function showLimit(){clearTimeout(toastTimer);toast.textContent='최대 3개까지 선택할 수 있습니다.';toast.classList.add('visible');toastTimer=setTimeout(hideToast,3000);}
  function sectionData({group,index}){
-  const grade=$('rankingRating').value,lineup=$('rankingLineup').value,proposal=$('rankingProposal').value,pension=$('rankingPension').value;
+  const grade=$('rankingRating').value,lineup=$('rankingLineup').value,proposal=window.RateScheme?.customer?'all':$('rankingProposal').value,pension=$('rankingPension').value;
   const rows=rates.filter(row=>groupRank(row)===group&&row.terms[maturities[index]]&&(grade==='all'||row.grade&&ratingOrder.includes(row.grade)&&gradeRank(row)<=ratingOrder.indexOf(grade))&&(lineup==='all'||row.lineup===lineup)&&(pension==='all'||row.pension===pension)&&(proposal==='all'||termProposalState(row,maturities[index])===proposal)).sort((a,b)=>compareRate(a,b,index)||defaultOrder(a,b));
   const average=rows.length?rows.reduce((sum,row)=>sum+effectiveRate(row,index),0)/rows.length:null;
   return {group,index,label:`${labels[group]} · ${terms[index]}`,rows:rows.slice(0,10),total:rows.length,average,indices:[index],sortLabel:`${terms[index]} 금리 높은 순${group===1?' (단리환산 기준)':''}`,condition:`${labels[group]} / ${terms[index]} / 등급 ${grade} / 라인업 ${lineup} / 제안가능 ${proposal} / 사업자 ${pension}`};
