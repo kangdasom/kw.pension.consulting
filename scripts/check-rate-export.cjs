@@ -4,7 +4,7 @@ function el(id){if(!elements.has(id))elements.set(id,{value:'all',textContent:''
 const periods=[0,1,2,3].map(value=>({value:String(value),checked:true}));
 const categories=['파생결합사채','보험','은행예금','저축은행예금'].map(value=>({value,checked:true}));
 const context=vm.createContext({window:{},localStorage:{getItem(){return null}},document:{getElementById:el,createElement:()=>el('validation'),querySelector:el,querySelectorAll(selector){return selector.includes('periodMenu')?periods.filter(x=>x.checked):selector.includes('categoryMenu')?categories.filter(x=>x.checked):[];}}});
-for(const f of ['rates-data.js','rate-model.js','basic-settings-data.js','rate-export.js'])vm.runInContext(fs.readFileSync(f,'utf8'),context);
+for(const f of ['scripts/fixtures/rates-november.js','rate-model.js','basic-settings-data.js','rate-export.js'])vm.runInContext(fs.readFileSync(f,'utf8'),context);
 const run=s=>vm.runInContext(s,context),copy=x=>JSON.parse(JSON.stringify(x));
 run(`rates.forEach(r=>{r.grade=window.BASIC_SETTINGS_SEED.institutions[r.institutionCode]?.grade||null;r.lineup=window.BASIC_SETTINGS_SEED.products[r.id]?.lineup||null;});`);
 const api=context.window.RateExport;

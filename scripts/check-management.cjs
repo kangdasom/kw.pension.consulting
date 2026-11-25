@@ -158,7 +158,7 @@ console.log('PASS: 43 provider names, exact aliases, non-provider exclusions, li
 
 // Real November source preserves user overrides and old monthly records.
 const novemberStorage = {'db-rate-management-v1': JSON.stringify({institutions:{IL34:{grade:'AAA',pension:'N'}},products:{'IL34|1001|보너스 이율':{lineup:'Y'},'S017|7001|':{lineup:'N'}},months:{'2026-07':{legacy:{status:'Y',amount:'10억원',note:'유지'}}}})};
-const november = boot(novemberStorage,false,'2026-11',true,'rates-data.js');
+const november = boot(novemberStorage,false,'2026-11',true,'scripts/fixtures/rates-november.js');
 assert.equal(november.run('rates.length'),98);
 assert.equal(november.run("rates.find(r=>r.id==='IL34|1001|보너스').lineup"),'Y');
 assert.equal(november.run("rates.find(r=>r.id==='IL34|1001|보너스').grade"),'AAA');
@@ -173,7 +173,7 @@ assert.equal(JSON.parse(novemberStorage['db-rate-management-v1']).months['2026-0
 console.log('PASS: actual November source, preserved institution/lineup settings, renamed bonus, new-product unset, monthly reset and retained historical records.');
 
 // Direct buttons and institution edits use isolated settings, including hidden products.
-const direct=boot({},false,'2026-11',true,'rates-data.js');
+const direct=boot({},false,'2026-11',true,'scripts/fixtures/rates-november.js');
 // Set up a multi-product institution in this isolated test only.
 for(const r of direct.run("rates.filter(r=>r.institutionCode==='IL34')")){
   direct.element('basicRows').onchange({target:{dataset:{product:r.id},value:'Y'}});
@@ -292,3 +292,13 @@ sync.element('saveMonthly').onclick();
 assert.match(sync.element('monthlyMessage').textContent,/공용 저장 기능을 준비/);
 assert.equal(sharedStorage['db-rate-management-v1'],syncBefore);
 console.log('PASS: official admin cannot silently fall back to browser-only save when the publication scripts fail.');
+
+// December source keeps explicit settings and previous-month records.
+const december=boot(novemberStorage,false,"2026-12",true,"rates-data.js");
+assert.equal(december.run("rates.length"),115);
+assert.equal(december.run("rates.find(r=>r.id==='IL34|1001|보너스').grade"),"AAA");
+assert.equal(december.run("rates.find(r=>r.id==='S017|7001|').lineup"),"N");
+assert.equal(december.run("rates.find(r=>r.id==='IL05|1001|II').lineup"),null);
+assert.ok(december.run("rates.every(r=>Object.values(r.proposals).every(v=>v==='확인'))"));
+assert.equal(JSON.parse(novemberStorage["db-rate-management-v1"]).months["2026-07"].legacy.note,"유지");
+console.log("PASS: December settings, new-product unset, proposal reset and previous records.");

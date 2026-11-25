@@ -5,7 +5,7 @@ el('sortFilter').value='rate';el('maturitySort').value='0';
 const periods=[0,1,2,3].map(value=>({value:String(value),checked:true}));
 const categories=['파생결합사채','보험','은행예금','저축은행예금'].map(value=>({value,checked:true}));
 const context=vm.createContext({window:{},localStorage:{getItem(){return null},setItem(){}},document:{getElementById:el,createElement:()=>el('validation'),querySelector:el,querySelectorAll(selector){if(selector.includes('periodMenu'))return periods.filter(x=>x.checked);if(selector.includes('categoryMenu'))return categories.filter(x=>x.checked);return [];}}});
-for(const name of ['rates-data.js','rate-model.js'])vm.runInContext(fs.readFileSync(name,'utf8'),context);
+for(const name of ['scripts/fixtures/rates-november.js','rate-model.js'])vm.runInContext(fs.readFileSync(name,'utf8'),context);
 vm.runInContext(`
 if(rates.length!==98 || importData.acceptedTerms!==407 || importData.totalRows!==450 || importData.month!=='2026-11') throw Error('Source reconciliation');
 if(els.lineupFilter.value!=='Y' || els.proposalFilter.value!=='all') throw Error('Default filters');

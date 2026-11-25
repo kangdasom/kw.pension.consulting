@@ -1,7 +1,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const storage={};let fail=false;
 const ctx=vm.createContext({window:{},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(fail)throw Error('quota');storage[k]=v;}},Date,Set,Map});
-for(const file of ['rates-data.js','rate-upload-core.js'])vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
+for(const file of ['scripts/fixtures/rates-november.js','rate-upload-core.js'])vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
 const api=ctx.window.RateUpload,base=ctx.window.RATE_IMPORT;
 const row=(n,rate,code='S017',name='KB증권',more={})=>({number:n,values:{B:'2026-12-01',C:'2026-12-31',D:code+':'+name,F:'7001:ELB',H:'12',I:'',J:String(rate),...more}});
 const known=base.products.filter(p=>p.type==='ELB').slice(0,3);
@@ -47,5 +47,5 @@ assert.equal(JSON.stringify(report.snapshot).includes('comparisons'),false);
 storage['db-rate-management-v1']='untouched';const snapshot=r.snapshot;
 fail=true;assert.throws(()=>api.commit(snapshot));assert.equal(api.read().activeMonth,null);assert.equal(ctx.window.RATE_IMPORT.month,'2026-11');
 fail=false;api.commit(snapshot);assert.equal(api.read().activeMonth,'2026-12');assert.ok(api.sources()['2026-11']);assert.equal(storage['db-rate-management-v1'],'untouched');
-vm.runInContext(fs.readFileSync('rates-data.js','utf8'),ctx);vm.runInContext(fs.readFileSync('rate-upload-core.js','utf8'),ctx);assert.equal(ctx.window.RATE_IMPORT.month,'2026-12');
+vm.runInContext(fs.readFileSync('scripts/fixtures/rates-november.js','utf8'),ctx);vm.runInContext(fs.readFileSync('rate-upload-core.js','utf8'),ctx);assert.equal(ctx.window.RATE_IMPORT.month,'2026-12');
 console.log('PASS: full group/maturity rankings, inclusive common mean, positive/zero/negative bp, tied ranks, singleton, unknown/mismatched institutions, duplicate-first, invalid rows, atomic failed writes, source reload and management preservation.');

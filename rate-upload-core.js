@@ -34,7 +34,7 @@
   }
   function read(selected=plan){const state=readAll();return selected==='DB'?state:state.customerPlans?.[selected]||{activeMonth:null,months:{}};}
   let storeWarning='';
-  try{const s=read();if(s.activeMonth)window.RATE_IMPORT=clone(s.months[s.activeMonth]);}catch(e){storeWarning=e.message;}
+  try{const s=read();if(s.activeMonth&&s.activeMonth>=bundled.month)window.RATE_IMPORT=clone(s.months[s.activeMonth]);}catch(e){storeWarning=e.message;}
   function sources(selected=plan){const s=read(selected),source=bundledSources[selected];return {...(source?{[source.month]:source}:{}),...s.months};}
   function commit(snapshot,companions={}){
     if(!validSnapshot(snapshot))throw Error('반영 가능한 금리 자료가 없습니다. 검증을 다시 실행하세요.');

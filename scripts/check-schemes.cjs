@@ -2,7 +2,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const storage={};let fail=false;
 function load(plan='DB'){
  const ctx=vm.createContext({window:{},localStorage:{getItem:k=>storage[k]||null,setItem(k,v){if(fail)throw Error('quota');storage[k]=v;}},Date,Set,Map});
- for(const file of ['rates-data.js','scheme-rates-data.js'])vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
+ for(const file of ['scripts/fixtures/rates-november.js','scripts/fixtures/scheme-rates-november.js'])vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
  const {RATE_IMPORT:db,SCHEME_RATE_DATA:data}=ctx.window;
  ctx.window.RateScheme={id:plan,customer:plan!=='DB',bundled:{DB:db,...data.snapshots}};
  if(plan!=='DB')ctx.window.RATE_IMPORT=JSON.parse(JSON.stringify(data.snapshots[plan]));

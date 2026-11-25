@@ -4,7 +4,7 @@ const ratingOrder = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-','B
 let importData = window.RATE_IMPORT;
 let rates = importData.products;
 let monthLabel = importData.month.replace(/^(\d{4})-0?(\d+)$/, '$1년 $2월');
-const approvedSource = importData.sha256 === 'a1655d46b7a7f9542653a62ea0a9a8ca5042fbe399cdf30b48c9220a38b81211';
+const approvedSource = ['a1655d46b7a7f9542653a62ea0a9a8ca5042fbe399cdf30b48c9220a38b81211','a95fbed29c5977e99fb6f925c890eea475b99d9f200c5c3a042da57126e93bca'].includes(importData.sha256);
 const els = Object.fromEntries(['rateTableBody','resultCount','emptyState','periodFilter','ratingFilter','pensionFilter','lineupFilter','proposalFilter','sortFilter','resetButton','infoButton','infoModal','saveModal','saveButton','previewButton'].map(id => [id, document.getElementById(id)]));
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const checked = () => [...document.querySelectorAll('#categoryMenu input:checked')].map(input => input.value);

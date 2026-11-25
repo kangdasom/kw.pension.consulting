@@ -1,6 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
 (async()=>{
+ if(process.env.SCHEMES_LIVE==='1'){process.env.MONTHLY_LIVE='1';require('./check-monthly-rates-ui.cjs');return;}
  const browser=await chromium.launch({channel:'msedge',headless:true});
  try{
   const root=path.resolve(__dirname,'..'),live=process.env.SCHEMES_LIVE==='1';
@@ -10,7 +11,7 @@ const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/\.(?:js|css|woff2|png|json)(?:\?|$)/.test(r.url()))bad.push(r.url());});
   const base=live?'https://kangdasom.github.io/kw.pension.consulting/':'http://rates.test/kw.pension.consulting/';
   if(!live){
-   await context.route('http://rates.test/**',route=>{const name=new URL(route.request().url()).pathname.replace(/^\/kw\.pension\.consulting\//,'')||'index.html';return route.fulfill({path:path.join(root,name),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.woff2')?'font/woff2':name.endsWith('.png')?'image/png':name.endsWith('.json')?'application/json':'text/html'});});
+   await context.route('http://rates.test/**',route=>{const name=new URL(route.request().url()).pathname.replace(/^\/kw\.pension\.consulting\//,'')||'index.html';const fixture={'rates-data.js':'scripts/fixtures/rates-november.js','scheme-rates-data.js':'scripts/fixtures/scheme-rates-november.js'};return route.fulfill({path:path.join(root,fixture[name]||name),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.woff2')?'font/woff2':name.endsWith('.png')?'image/png':name.endsWith('.json')?'application/json':'text/html'});});
    await context.route(/https:\/\/kangdasom\.github\.io\/kw\.pension\.consulting\/notice(?:-dc|-irp)?\.json(?:\?|$)/,route=>route.fulfill({path:path.join(root,path.basename(new URL(route.request().url()).pathname)),contentType:'application/json'}));
   }
   const go=async(plan='')=>{await page.goto(base+(plan?'index.html?plan='+plan:''));await page.evaluate(()=>document.fonts.ready);};

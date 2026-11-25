@@ -57,3 +57,8 @@ node_modules/
 !/scripts/check-schemes.cjs
 !/scripts/check-schemes-ui.cjs
 !/scripts/check-rate-history-ui.cjs
+
+!/scripts/fixtures/rates-november.js
+!/scripts/fixtures/scheme-rates-november.js
+!/scripts/check-monthly-rates.cjs
+!/scripts/check-monthly-rates-ui.cjs

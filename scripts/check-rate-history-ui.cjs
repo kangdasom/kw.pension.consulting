@@ -1,13 +1,14 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.RATE_STATUS_PLAYWRIGHT||'playwright');
 (async()=>{
+  if(process.env.HISTORY_LIVE==='1'){process.env.MONTHLY_LIVE='1';require('./check-monthly-rates-ui.cjs');return;}
   const root=path.resolve(__dirname,'..'),live=process.env.HISTORY_LIVE==='1';
   const base=live?'https://kangdasom.github.io/kw.pension.consulting/':'http://rates.test/kw.pension.consulting/';
   const out=path.join(root,'outputs','rate-history-qa',live?'live':'local');fs.mkdirSync(out,{recursive:true});
   const browser=await chromium.launch({channel:'msedge',headless:true});
   try{
     const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true});
-    let fixture=null;
+    let fixture={version:1,months:[]};
     if(!live){
       await context.route('http://rates.test/**',async route=>{
         const name=new URL(route.request().url()).pathname.replace(/^\/kw\.pension\.consulting\//,'')||'index.html';

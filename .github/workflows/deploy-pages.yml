@@ -22,6 +22,7 @@ jobs:
           node-version: '22'
       - name: Verify existing behavior
         run: |
+          node scripts/check-monthly-rates.cjs
           node scripts/check-rates.cjs
           node scripts/check-management.cjs
           node scripts/check-management-publish.cjs
