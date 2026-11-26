@@ -341,7 +341,7 @@ for(const [id,fields] of Object.entries(appliedBatch.products)){
     assert.equal(value,expected);if(Object.hasOwn(lineupBatch.products[id]||{},field))importedFields++;
   }
 }
-assert.equal(importedFields,180);
+assert.equal(importedFields,Object.values(lineupBatch.products).reduce((sum,fields)=>sum+Object.keys(fields).length,0));
 const changedId=Object.keys(lineupBatch.products)[0];
 batchApp.element('basicRows').onchange({target:{dataset:{product:changedId,field:'lineup'},value:''}});
 batchApp.element('basicRows').onchange({target:{dataset:{product:changedId,field:'dcirpLineup'},value:'N'}});
@@ -358,4 +358,4 @@ const failedBatchStorage={[settingsKey]:oldText};
 const failedBatch=boot(failedBatchStorage,true,'2026-12',true,'rates-data.js',lineupBatch);
 failedBatch.element('saveBasic').onclick();assert.equal(failedBatchStorage[settingsKey],oldText);
 assert.match(failedBatch.element('basicMessage').textContent,/保存|저장하지 못/);
-console.log('PASS: 180 approved lineup fields replace stale caches; blank products, other fields, institutions and monthly data preserved; later manual clears/edits and failed-save storage preserved.');
+console.log('PASS: approved lineup fields replace stale caches; blank products, other fields, institutions and monthly data preserved; later manual clears/edits and failed-save storage preserved.');
