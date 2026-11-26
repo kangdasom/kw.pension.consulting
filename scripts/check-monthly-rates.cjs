@@ -11,6 +11,11 @@ for(const [plan,s] of Object.entries(snapshots)){
  assert.equal(s.sha256,'a95fbed29c5977e99fb6f925c890eea475b99d9f200c5c3a042da57126e93bca');
  assert.equal(s.products.length,plan==='DB'?115:101);assert.equal(s.acceptedTerms,plan==='DB'?458:403);
  assert.equal(s.totalRows,509);assert.equal(s.defaultOptionExcluded,6);
+ const correction=s.corrections?.find(c=>c.sha256==='aefb3c53612f28dd444826b5835215803dcbcf7ffec915efa431bead62a9e275');assert.ok(correction,'Approved Samsung correction provenance');
+ assert.equal(correction.product,'S030|7001|');assert.deepEqual(copy(correction.months),[3,12,24,36]);
+ const samsung=s.products.find(p=>p.id==='S030|7001|');
+ for(const [months,rate] of Object.entries({3:4.52,12:4.52,24:4.55,36:4.58})){assert.equal(samsung.terms[months].rate,rate);assert.equal(samsung.terms[months].sha256,correction.sha256);assert.equal(samsung.terms[months].source,correction.source);}
+
  assert.equal(s.acceptedTerms,s.products.reduce((n,p)=>n+Object.keys(p.terms).length,0));
  assert.equal(s.rateColumn,{DB:'J',DC:'K',IRP:'M'}[plan]);
  assert.equal(new Set(s.products.map(p=>p.id)).size,s.products.length);
