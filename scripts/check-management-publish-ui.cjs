@@ -59,8 +59,10 @@ const api=require('../management-publish.js');
   };
   publish(body); // GitHub has saved the data; Pages has not deployed it yet.
   await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('GitHub 저장이 완료'));
+  assert(await page.locator('#monthlySubmit').isHidden());
   assert(!/배포가 완료/.test(await page.locator('#monthlyMessage').innerText()));
-  deployed=latest;
+  deployed={...latest,revision:'newer-unrelated-save'};
   await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
   await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('사이트 배포가 완료'));
   assert.equal(await page.locator('#monthlyDirty').innerText(),'변경사항 없음');
@@ -84,14 +86,39 @@ const api=require('../management-publish.js');
   deployed=publish(clearBody);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
   await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('사이트 배포가 완료'));
   await open();assert.equal(await note.inputValue(),'');assert.equal(await date.inputValue(),'');assert.equal(deployed.months['2026-10'][key(12)].amount,'이전 월');
-  // Conflict and read failure never publish or discard edits.
-  await note.fill('충돌 시 유지할 초안');latest={...latest,revision:'another-save'};
+  // An unrelated newer repository revision is merged without discarding the draft.
+  await note.fill('최신 정보와 합칠 초안');
+  latest={...latest,revision:'another-save',months:structuredClone(latest.months)};
+  latest.months[request.month][key(12)].amount='다른 담당자의 한도';
+  await page.locator('#saveMonthly').click();await page.locator('#monthlySubmit').waitFor({state:'visible'});
+  const mergedBody=await page.locator('#monthlyRequestBody').inputValue(),mergedRequest=api.restore(mergedBody);
+  assert.equal(mergedRequest.baseRevision,'another-save');
+  assert.equal(mergedRequest.changes[key('common')].note,'최신 정보와 합칠 초안');
+  assert(!mergedRequest.changes[key(12)]?.amount);
+  deployed=publish(mergedBody);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('사이트 배포가 완료'));
+  // An identical save already in GitHub is tracked without a duplicate request.
+  await note.fill('이미 저장된 내용');
+  latest={...latest,revision:'already-saved',months:structuredClone(latest.months)};
+  latest.months[request.month][key('common')].note='이미 저장된 내용';
+  const duplicatePopups=popups;await page.locator('#saveMonthly').click();
+  await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('중복 요청 없이'));
+  assert.equal(popups,duplicatePopups);assert(await page.locator('#monthlySubmit').isHidden());
+  await page.reload();
+  await page.locator('#monthlyRequest').waitFor({state:'visible'});
+  assert(await page.locator('#monthlySubmit').isHidden());
+  deployed={...latest,revision:'later-deployment'};await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('사이트 배포가 완료'));
+  await open();
+  // A true same-field conflict and a read failure never publish or discard edits.
+  await note.fill('충돌 시 유지할 초안');latest={...latest,revision:'conflict',months:structuredClone(latest.months)};
+  latest.months[request.month][key('common')].note='먼저 저장된 다른 값';
   const popupCount=popups;await page.locator('#saveMonthly').click();
   await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('먼저 저장'));
   assert.equal(popups,popupCount);assert.equal(await note.inputValue(),'충돌 시 유지할 초안');
   deployed=latest;await page.locator('#monthlyLatest').click();
   await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('최신 사이트 배포본'));
-  assert.equal(await note.inputValue(),'');
+  assert.equal(await note.inputValue(),'먼저 저장된 다른 값');
   await note.fill('요청 중단 후 유지');await page.locator('#saveMonthly').click();await page.locator('#monthlySubmit').waitFor({state:'visible'});
   await page.locator('#monthlyStop').click();assert.equal(await note.inputValue(),'요청 중단 후 유지');assert(!await page.locator('#saveMonthly').isDisabled());
   failRead=true;await page.locator('#monthlyLatest').click();await page.waitForFunction(()=>document.getElementById('monthlyMessage').textContent.includes('불러오지 못했습니다'));

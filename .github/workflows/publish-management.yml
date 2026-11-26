@@ -35,12 +35,18 @@ jobs:
             const catalog = {window: {}};
             vm.runInNewContext(fs.readFileSync('rates-data.js', 'utf8'), catalog, {timeout: 1000});
             const next = api.parseIssue(context.payload, current, catalog.window.RATE_IMPORT.products);
+            let sourceSha;
             if (next.revision !== current.revision) {
-              await github.rest.repos.createOrUpdateFileContents({
+              const {data: saved} = await github.rest.repos.createOrUpdateFileContents({
                 ...args, path: api.path, branch: 'main', sha: file.sha,
                 message: 'Publish monthly management (' + JSON.parse(context.payload.issue.body).month + ')',
                 content: Buffer.from(JSON.stringify(next, null, 2) + '\n').toString('base64')
               });
+              sourceSha = saved.commit.sha;
+            } else {
+              const {data: head} = await github.rest.repos.getCommit({...args, ref: 'main'});
+              sourceSha = head.sha;
             }
-            await github.rest.actions.createWorkflowDispatch({...args, workflow_id: 'deploy-pages.yml', ref: 'main'});
+            if (!/^[0-9a-f]{40}$/.test(sourceSha)) throw Error('저장한 배포 버전을 확인하지 못했습니다.');
+            await github.rest.actions.createWorkflowDispatch({...args, workflow_id: 'deploy-pages.yml', ref: 'main', inputs: {source_sha: sourceSha}});
             await github.rest.issues.update({...args, issue_number: context.issue.number, state: 'closed', state_reason: 'completed'});

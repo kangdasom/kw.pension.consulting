@@ -15,6 +15,21 @@ assert.deepEqual(next.months['2026-10'],initial.months['2026-10']);
 assert.deepEqual(api.parseIssue(event,next,products),next);
 assert.equal(new URL(request.url).searchParams.get('body'),request.body);
 assert.deepEqual(api.delta(snapshot,next),{});assert.throws(()=>api.prepare(snapshot,next),/변경사항/);
+// A stale deployment must not reject an unrelated save, or resubmit identical values.
+assert.deepEqual(api.rebase(snapshot,initial,next),{month,records:{},conflicts:[]});
+assert(api.matches(request,next));
+assert(api.matches(request,{...next,revision:'superseded-by-unrelated-save'}));
+assert(!api.matches(request,initial));
+const concurrent=structuredClone(initial);concurrent.revision='another-save';
+concurrent.months[month]={[key(12)]:{note:'別の項目'},[key(36)]:{amount:'20억원'}};
+const merged=api.rebase(snapshot,initial,concurrent);
+assert.deepEqual(merged.conflicts,[]);assert.deepEqual(merged.records,snapshot.records);
+const mergedNext=api.parseIssue({...event,issue:{...event.issue,body:api.prepare(merged,concurrent).body}},concurrent,products);
+assert.equal(mergedNext.months[month][key(12)].note,'別の項目');
+assert.equal(mergedNext.months[month][key(36)].amount,'20억원');
+concurrent.months[month][key(12)].amount='99억원';
+assert.deepEqual(api.rebase(snapshot,initial,concurrent).conflicts,[{key:key(12),field:'amount'}]);
+assert.equal(concurrent.months[month][key(12)].amount,'99억원');
 const partial=api.prepare({month,records:{[key(12)]:{amount:''},[key('common')]:{note:''}}},next);
 const cleared=api.parseIssue({...event,issue:{...event.issue,body:partial.body}},next,products);
 assert.equal(cleared.months[month][key(12)].status,'Y');
@@ -40,17 +55,19 @@ const script=workflow.split('script: |\n')[1].split('\n').map(line=>line.replace
 const run=new (Object.getPrototypeOf(async function(){}).constructor)('github','context','require',script);
 (async()=>{
  let writes=[],dispatches=[],closed=[];
- const github={rest:{repos:{getContent:async()=>({data:{sha:'file-sha',content:Buffer.from(JSON.stringify(initial)).toString('base64')}}),createOrUpdateFileContents:async value=>writes.push(value)},actions:{createWorkflowDispatch:async value=>dispatches.push(value)},issues:{update:async value=>closed.push(value)}}};
+ const savedSha='a'.repeat(40),headSha='b'.repeat(40);
+ const github={rest:{repos:{getContent:async()=>({data:{sha:'file-sha',content:Buffer.from(JSON.stringify(initial)).toString('base64')}}),getCommit:async()=>({data:{sha:headSha}}),createOrUpdateFileContents:async value=>{writes.push(value);return {data:{commit:{sha:savedSha}}};}},actions:{createWorkflowDispatch:async value=>dispatches.push(value)},issues:{update:async value=>closed.push(value)}}};
  const context={repo:{owner:'kangdasom',repo:'kw.pension.consulting'},payload:event,issue:{number:1}};
  const load=name=>name==='./management-publish.js'?api:require(name);
  await run(github,context,load);
  assert.equal(writes.length,1);assert.equal(writes[0].path,'management-shared.json');assert.equal(writes[0].sha,'file-sha');
  const published=JSON.parse(Buffer.from(writes[0].content,'base64').toString('utf8'));
  assert.deepEqual(published.months,next.months);assert.equal(dispatches[0].workflow_id,'deploy-pages.yml');assert.equal(closed[0].state,'closed');
+ assert.equal(dispatches[0].inputs.source_sha,savedSha);
  for(const current of [published,{...initial,revision:'changed'}]){
   writes=[];dispatches=[];closed=[];
   github.rest.repos.getContent=async()=>({data:{sha:'new-sha',content:Buffer.from(JSON.stringify(current)).toString('base64')}});
-  if(current===published){await run(github,context,load);assert.equal(writes.length,0);assert.equal(dispatches.length,1);}
+  if(current===published){await run(github,context,load);assert.equal(writes.length,0);assert.equal(dispatches.length,1);assert.equal(dispatches[0].inputs.source_sha,headSha);}
   else{await assert.rejects(run(github,context,load),/먼저 저장/);assert.equal(writes.length+dispatches.length+closed.length,0);}
  }
  writes=[];dispatches=[];closed=[];
@@ -58,5 +75,8 @@ const run=new (Object.getPrototypeOf(async function(){}).constructor)('github','
  assert.equal(writes.length+dispatches.length+closed.length,0);
  assert.match(workflow,/github.actor == 'kangdasom'/);assert.match(workflow,/github.event.sender.id == 311216178/);
  assert(!workflow.includes('${{ github.event.issue.body }}'));
+ const deployWorkflow=fs.readFileSync('.github/workflows/deploy-pages.yml','utf8');
+ assert.match(deployWorkflow,/source_sha:/);
+ assert(deployWorkflow.includes('ref: ${{ inputs.source_sha || github.sha }}'));
  console.log('PASS: owner-authorized monthly publication, validation/catalog checks, partial updates and explicit clears, other-month preservation, conflicts/replay, long-request copy, exact workflow write/dispatch/close and unauthorized rejection.');
 })().catch(e=>{console.error(e);process.exitCode=1});

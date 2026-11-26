@@ -45,6 +45,24 @@
   }
   return changes;
  }
+ // Merge only the user's changed fields. A newer revision alone is not a conflict.
+ function rebase(snapshot,baseline,latest){
+  latest=validate(latest);
+  const edits=delta(snapshot,baseline),changes={},conflicts=[];
+  for(const [key,fields] of Object.entries(edits)){
+   for(const [field,value] of Object.entries(fields)){
+    const current=latest.months[snapshot.month]?.[key]?.[field];
+    if(current===value)continue;
+    if(current!==baseline.months[snapshot.month]?.[key]?.[field])conflicts.push({key,field});
+    else (changes[key] ||= {})[field]=value;
+   }
+  }
+  return {month:snapshot.month,records:changes,conflicts};
+ }
+ function matches(request,value){
+  const current=validate(value).months[request.month]||{};
+  return Object.entries(request.changes).every(([key,fields])=>Object.entries(fields).every(([field,text])=>current[key]?.[field]===text));
+ }
  function restore(body){
   if(typeof body!=='string'||body.length>60000)throw Error('변경량이 많습니다. 변경 내용을 나누어 저장해주세요.');
   let value;try{value=JSON.parse(body);}catch{bad();}
@@ -87,6 +105,6 @@
   const file=await get(`https://api.github.com/repos/${repository}/contents/${path}?ref=main&t=${Date.now()}`);
   return validate(JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(file.content.replace(/\s/g,'')),c=>c.charCodeAt(0)))));
  }
- const api={repository,site,path,title,validate,records,keyParts,delta,restore,prepare,parseIssue,deployed,latest};
+ const api={repository,site,path,title,validate,records,keyParts,delta,rebase,matches,restore,prepare,parseIssue,deployed,latest};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.MonthlyManagementPublisher=api;
 })(globalThis);

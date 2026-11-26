@@ -11,9 +11,9 @@
  const $=id=>document.getElementById(id),key='db-rate-monthly-publish-v1';
  $('monthlyMessage').insertAdjacentHTML('afterend',`<div class="monthly-publish-tools"><button type="button" id="monthlyLatest">최신 배포본 불러오기</button><a href="https://github.com/${api.repository}/actions/workflows/publish-management.yml" target="_blank" rel="noopener noreferrer">저장 처리 내역</a><a href="https://github.com/${api.repository}/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">배포 내역</a></div><div id="monthlyRequest" class="monthly-request" hidden><p id="monthlyRequestHelp"></p><textarea id="monthlyRequestBody" rows="4" readonly aria-label="한도관리 게시 요청 복사용" hidden></textarea><div><button type="button" id="monthlyCopy" hidden>게시 요청 복사</button><a id="monthlySubmit" target="_blank" rel="noopener noreferrer">GitHub 저장 요청 열기</a><button type="button" id="monthlyStop">배포 확인 중단</button></div></div>`);
  let baseline=null,pending=null,busy=false,conflicted=false,timer=null,sequence=0,attempts=0,locked=[];
- try{const stored=JSON.parse(sessionStorage.getItem(key)||'null');if(stored?.body){pending=api.restore(stored.body);manager.restoreMonthly(pending);}}catch{}
+ try{const stored=JSON.parse(sessionStorage.getItem(key)||'null');if(stored?.body){pending={...api.restore(stored.body),saved:stored.saved===true};manager.restoreMonthly(pending);}}catch{}
  const message=text=>{$('monthlyMessage').textContent=text;};
- function keep(){try{if(pending)sessionStorage.setItem(key,JSON.stringify({body:pending.body}));else sessionStorage.removeItem(key);}catch{}}
+ function keep(){try{if(pending)sessionStorage.setItem(key,JSON.stringify({body:pending.body,saved:pending.saved===true}));else sessionStorage.removeItem(key);}catch{}}
  function lock(value){
   if(value&&!locked.length){
    const areas=['#manageRows','#termDetails','.management-bulk','.management-filters'];
@@ -33,8 +33,9 @@
   if(pending){
    $('monthlySubmit').href=pending.url;
    $('monthlyRequestBody').value=pending.body;
-   $('monthlyCopy').hidden=!pending.needsPaste;$('monthlyRequestBody').hidden=!pending.needsPaste;
-   $('monthlyRequestHelp').textContent=pending.month+' · '+(pending.needsPaste?'변경 내용이 깁니다. 게시 요청을 복사하고 GitHub 본문에 붙여넣어 제출해주세요.':'GitHub에서 kangdasom 계정으로 로그인한 뒤 제목·본문을 그대로 제출해주세요. 제출하면 자동 배포됩니다.');
+   $('monthlySubmit').hidden=pending.saved===true;
+   $('monthlyCopy').hidden=pending.saved||!pending.needsPaste;$('monthlyRequestBody').hidden=pending.saved||!pending.needsPaste;
+   $('monthlyRequestHelp').textContent=pending.month+' · '+(pending.saved?'GitHub 저장 완료 · 사이트 배포를 확인하고 있습니다.':pending.needsPaste?'변경 내용이 깁니다. 게시 요청을 복사하고 GitHub 본문에 붙여넣어 제출해주세요.':'GitHub에서 kangdasom 계정으로 로그인한 뒤 제목·본문을 그대로 제출해주세요. 제출하면 자동 배포됩니다.');
   }
  }
  async function checkDeployment(){
@@ -43,9 +44,17 @@
   try{
    const deployed=await api.deployed();
    if(id!==sequence||pending!==target)return;
-   if(deployed.revision===target.revision){
+   if(api.matches(target,deployed)){
     baseline=deployed;manager.receiveShared(deployed,target.month);pending=null;conflicted=false;keep();
     message('사이트 배포가 완료되었습니다. 다른 기기에서도 같은 제안가능·한도·확인일·비고가 적용됩니다.');update();return;
+   }
+   if(!target.saved){
+    const latest=await api.latest();
+    if(id!==sequence||pending!==target)return;
+    if(api.matches(target,latest)){
+     target.saved=true;keep();update();
+     message('GitHub 저장이 완료되었습니다. 사이트 배포를 확인하고 있습니다. 배포 완료까지 잠시 기다려주세요.');
+    }
    }
   }catch{}
   if(id!==sequence||pending!==target)return;
@@ -71,12 +80,13 @@
   busy=true;update();
   try{
    const latest=await api.latest();
-   if(latest.revision!==baseline.revision)throw Error('다른 관리정보가 먼저 저장되었습니다. 최신 배포본을 불러와 다시 저장해주세요. 입력 내용은 유지됩니다.');
-   pending=request;attempts=0;keep();
-   message('GitHub 저장 요청을 준비했습니다. 열린 화면에서 제출하면 사이트에 자동 배포됩니다. 아직 배포 전입니다.');
+   const merged=api.rebase(snapshot,baseline,latest);
+   if(merged.conflicts.length)throw Error('편집 중 같은 항목에 다른 값이 먼저 저장되었습니다. 입력 내용은 유지됩니다. 최신 배포본과 비교한 뒤 다시 저장해주세요.');
+   pending=Object.keys(merged.records).length?api.prepare(merged,latest):{...request,saved:true};attempts=0;keep();
+   message(pending.saved?'같은 내용이 이미 GitHub에 저장되어 있습니다. 중복 요청 없이 사이트 반영을 확인합니다.':'GitHub 저장 요청을 준비했습니다. 열린 화면에서 제출하면 사이트에 자동 배포됩니다. 아직 배포 전입니다.');
   }catch(error){message(error.message);}
   finally{busy=false;update();}
-  if(pending){if(!pending.needsPaste)$('monthlySubmit').click();checkDeployment();}
+  if(pending){if(!pending.saved&&!pending.needsPaste)$('monthlySubmit').click();checkDeployment();}
  }
  $('monthlyLatest').onclick=()=>{
   if(manager.monthlyHasUnsaved()&&!confirm('현재 월의 미저장 편집을 취소하고 최신 사이트 배포본을 불러올까요?'))return;
