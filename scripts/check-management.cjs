@@ -3,7 +3,7 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 
 // Exercise management event handlers with isolated storage; never touch user settings.
-function boot(storage = {}, failWrites = false, month = '2026-07', useSeed = false, source = 'scripts/fixtures/rates-july.js') {
+function boot(storage = {}, failWrites = false, month = '2026-07', useSeed = false, source = 'scripts/fixtures/rates-july.js', lineupImport = null) {
   const elements = new Map();
   function element(id = '') {
     if (id && elements.has(id)) return elements.get(id);
@@ -41,6 +41,7 @@ function boot(storage = {}, failWrites = false, month = '2026-07', useSeed = fal
     confirm: () => true
   });
   vm.runInContext(fs.readFileSync(source, 'utf8'), context);
+  if(lineupImport)context.window.LINEUP_SETTINGS_IMPORT=lineupImport;
   if (useSeed) {
     vm.runInContext(fs.readFileSync('basic-settings-data.js', 'utf8'), context);
     vm.runInContext(fs.readFileSync('pension-providers-data.js', 'utf8'), context);
@@ -302,3 +303,59 @@ assert.equal(december.run("rates.find(r=>r.id==='IL05|1001|II').lineup"),null);
 assert.ok(december.run("rates.every(r=>Object.values(r.proposals).every(v=>v==='확인'))"));
 assert.equal(JSON.parse(novemberStorage["db-rate-management-v1"]).months["2026-07"].legacy.note,"유지");
 console.log("PASS: December settings, new-product unset, proposal reset and previous records.");
+
+// Explicit workbook edits replace stale local lineup fields once, while blanks
+// and later manual saves retain their distinct meanings.
+const importedContext={window:{}};
+vm.runInNewContext(fs.readFileSync('lineup-settings-data.js','utf8'),importedContext);
+const lineupBatch=importedContext.window.LINEUP_SETTINGS_IMPORT;
+assert.equal(lineupBatch.schema,'product-lineup-import-v1');
+assert.equal(lineupBatch.revision,lineupBatch.sourceSha256);
+const oldSettings={institutions:{IL05:{grade:'AA+',pension:''}},products:{},months:{'2026-10':{keep:{status:'N',note:'보존'}},'2026-12':{keep:{amount:'기존 한도'}}}};
+const catalog={window:{}};vm.runInNewContext(fs.readFileSync('rates-data.js','utf8'),catalog);
+for(const row of catalog.window.RATE_IMPORT.products)oldSettings.products[row.id]={lineup:'N',dcirpLineup:'Y',keep:'유지'};
+for(const [id,fields] of Object.entries(lineupBatch.products))for(const [field,value] of Object.entries(fields)){
+  assert.ok(['lineup','dcirpLineup'].includes(field));assert.ok(['Y','N',''].includes(value));
+  oldSettings.products[id][field]=value==='Y'?'N':'Y';
+}
+const settingsKey='db-rate-management-v1',oldText=JSON.stringify(oldSettings);
+const batchStorage={[settingsKey]:oldText},baselineStorage={[settingsKey]:oldText};
+const baselineBatch=boot(baselineStorage,false,'2026-12',true,'rates-data.js');baselineBatch.element('saveBasic').onclick();
+const baselineSettings=JSON.parse(baselineStorage[settingsKey]);
+const batchApp=boot(batchStorage,false,'2026-12',true,'rates-data.js',lineupBatch);
+assert.equal(batchStorage[settingsKey],oldText,'Reading a batch must not write browser storage');
+for(const row of catalog.window.RATE_IMPORT.products){
+  const fields=lineupBatch.products[row.id]||{};
+  const expected=Object.hasOwn(fields,'lineup')?fields.lineup:oldSettings.products[row.id].lineup;
+  assert.equal(batchApp.run(`rates.find(r=>r.id===${JSON.stringify(row.id)}).lineup`),expected||null);
+}
+batchApp.element('saveBasic').onclick();
+const appliedBatch=JSON.parse(batchStorage[settingsKey]);
+assert.equal(appliedBatch.lineupImportRevision,lineupBatch.revision);
+assert.deepEqual(appliedBatch.institutions,baselineSettings.institutions);
+assert.deepEqual(appliedBatch.months,baselineSettings.months);
+let importedFields=0;
+for(const [id,fields] of Object.entries(appliedBatch.products)){
+  for(const [field,value] of Object.entries(fields)){
+    const expected=lineupBatch.products[id]?.[field]??baselineSettings.products[id]?.[field];
+    assert.equal(value,expected);if(Object.hasOwn(lineupBatch.products[id]||{},field))importedFields++;
+  }
+}
+assert.equal(importedFields,180);
+const changedId=Object.keys(lineupBatch.products)[0];
+batchApp.element('basicRows').onchange({target:{dataset:{product:changedId,field:'lineup'},value:''}});
+batchApp.element('basicRows').onchange({target:{dataset:{product:changedId,field:'dcirpLineup'},value:'N'}});
+batchApp.element('saveBasic').onclick();
+const laterBatch=boot(batchStorage,false,'2026-12',true,'rates-data.js',lineupBatch);
+assert.equal(laterBatch.run(`rates.find(r=>r.id===${JSON.stringify(changedId)}).lineup`),null);
+laterBatch.element('saveBasic').onclick();
+assert.equal(JSON.parse(batchStorage[settingsKey]).products[changedId].dcirpLineup,'N');
+const clearBatch={schema:'product-lineup-import-v1',revision:'explicit-clear-test',products:{[changedId]:{lineup:'',dcirpLineup:''}}};
+const clearApp=boot(batchStorage,false,'2026-12',true,'rates-data.js',clearBatch);clearApp.element('saveBasic').onclick();
+assert.equal(JSON.parse(batchStorage[settingsKey]).products[changedId].lineup,'');
+assert.equal(JSON.parse(batchStorage[settingsKey]).products[changedId].dcirpLineup,'');
+const failedBatchStorage={[settingsKey]:oldText};
+const failedBatch=boot(failedBatchStorage,true,'2026-12',true,'rates-data.js',lineupBatch);
+failedBatch.element('saveBasic').onclick();assert.equal(failedBatchStorage[settingsKey],oldText);
+assert.match(failedBatch.element('basicMessage').textContent,/保存|저장하지 못/);
+console.log('PASS: 180 approved lineup fields replace stale caches; blank products, other fields, institutions and monthly data preserved; later manual clears/edits and failed-save storage preserved.');

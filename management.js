@@ -28,6 +28,19 @@
   // An explicitly saved value on the new key always wins, including a cleared value.
   const previousBonus = saved.products['IL34|1001|보너스 이율'];
   if (previousBonus) saved.products['IL34|1001|보너스'] = {...previousBonus, ...(saved.products['IL34|1001|보너스'] || {})};
+  // An explicitly requested bulk edit replaces older local values once. Blank
+  // workbook cells are absent from products; later manual saves keep priority.
+  const lineupImport=window.LINEUP_SETTINGS_IMPORT;
+  if(lineupImport?.schema==='product-lineup-import-v1' && lineupImport.revision && saved.lineupImportRevision!==lineupImport.revision){
+    for(const [id,fields] of Object.entries(lineupImport.products||{})){
+      for(const field of ['lineup','dcirpLineup']){
+        if(Object.prototype.hasOwnProperty.call(fields,field) && ['Y','N',''].includes(fields[field])){
+          const item=saved.products[id] ||= {};item[field]=fields[field];
+        }
+      }
+    }
+    saved.lineupImportRevision=lineupImport.revision;
+  }
   const providers = window.PENSION_PROVIDERS;
   if (providers) {
     const normalize = name => name.normalize('NFKC').replace(/\s+/g,'').toUpperCase();
